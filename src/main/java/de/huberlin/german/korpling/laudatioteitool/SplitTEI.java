@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ResourceBundle;
+import java.util.UUID;
+import org.apache.commons.lang3.Validate;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -61,6 +63,8 @@ public class SplitTEI
       Document doc = sax.build(inputFile);
       
       extractMainCorpusHeader(doc, outputDirectory);
+      extractDocumentHeaders(doc, outputDirectory);
+      
 
     }
     catch (JDOMException ex)
@@ -101,29 +105,89 @@ public class SplitTEI
 
       // we work with the copy from now
       corpusHeader = newRootForCorpus.getChild("teiHeader", null);
-      if (corpusHeader.getChild("fileDesc", null) != null
-        && corpusHeader.getChild("fileDesc", null).getChild("titleStmt", null)
-        != null
-        && corpusHeader.getChild("fileDesc", null)
+      Validate.notNull(corpusHeader, messages.getString(
+          "ERROR NO CORPUS TITLE GIVEN"));
+      
+      Validate.matchesPattern(corpusHeader.getAttributeValue("type"), "CorpusHeader");
+      
+      Validate.notNull(corpusHeader.getChild("fileDesc", null), messages.getString(
+          "ERROR NO CORPUS TITLE GIVEN"));
+      Validate.notNull(corpusHeader.getChild("fileDesc", null).getChild("titleStmt", null), messages.getString(
+          "ERROR NO CORPUS TITLE GIVEN"));
+      
+      String title = corpusHeader.getChild("fileDesc", null)
         .getChild("titleStmt", null)
-        .getChildTextNormalize("title", null) != null)
-      {
-        String title = corpusHeader.getChild("fileDesc", null)
-          .getChild("titleStmt", null)
-          .getChildTextNormalize("title", null);
+        .getChildTextNormalize("title", null);
+      Validate.notNull(title, messages.getString(
+          "ERROR NO CORPUS TITLE GIVEN"));
 
-        // save the file with the title as file name
-        File outputFile = new File(corpusDir, title + ".xml");
-        XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
-        xmlOut.output(corpusDoc, new FileWriter(outputFile));
-        log.info("Written corpus header {}", outputFile.getAbsolutePath());
+      // save the file with the title as file name
+      File outputFile = new File(corpusDir, title + ".xml");
+      XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
+      xmlOut.output(corpusDoc, new FileWriter(outputFile));
+      log.info("Written corpus header {}", outputFile.getPath());
+
+    }
+  }
+  
+  private void extractDocumentHeaders(Document doc, File outputDirectory) throws LaudatioException, IOException
+  {
+    File documentDir = new File(outputDirectory, "DocumentHeader");
+    if (!documentDir.exists() && !documentDir.mkdir())
+    {
+      throw new LaudatioException(messages.getString(
+        "COULD NOT CREATE DIRECTORY")
+        + documentDir.getAbsolutePath());
+    }
+    
+    Element documentRoot = Validate.notNull(doc.getRootElement()
+      .getChild("teiCorpus", null));
+    
+    
+    for(Element docHeader : documentRoot.getChildren("teiHeader", null))
+    {
+      Validate.matchesPattern(docHeader.getAttributeValue("type"), "DocumentHeader");
+      
+      // create the subtree for the global corpus header
+      Namespace teiNS = Namespace.getNamespace(
+        "http://www.tei-c.org/ns/1.0");
+      Element tei = new Element("TEI", teiNS);
+      tei.addContent(docHeader.clone());
+      Document newDoc = new Document(tei);
+      
+      // we need to append an empty "text" element after the header
+      Element text = new Element("text", teiNS);
+      text.setText("");
+      tei.addContent(text);
+      
+      Element fileDesc = tei.getChild("teiHeader", null).getChild("fileDesc", null);
+      Validate.notNull(fileDesc);
+      
+      String outName = UUID.randomUUID().toString();
+      
+      String id = fileDesc.getAttributeValue("id", Namespace.XML_NAMESPACE);
+      if(id != null)
+      {
+        outName = id;
       }
       else
       {
-        throw new LaudatioException(messages.getString(
-          "ERROR NO CORPUS TITLE GIVEN"));
+        Element titleStmt = fileDesc.getChild("titleStmt", null);
+        Validate.notNull(titleStmt);
+        String title = titleStmt.getChildText("title", null);
+        if(title != null)
+        {
+          outName = title;
+        }
       }
+      
+      File outputFile = new File(documentDir, outName + ".xml");
+      XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
+      xmlOut.output(newDoc, new FileWriter(outputFile));
+      log.info("Written document header {}", outputFile.getPath());
+      
     }
-
+    
   }
+  
 }
