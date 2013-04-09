@@ -17,7 +17,7 @@ import org.apache.commons.cli.PosixParser;
 public class App
 {
   private static final ResourceBundle messages =
-    ResourceBundle.getBundle("Messages");
+    ResourceBundle.getBundle("de/huberlin/german/korpling/laudatioteitool/Messages");
 
   public static void main(String[] args)
   {
@@ -44,6 +44,8 @@ public class App
         MergeTEI merge = new MergeTEI(new File(cmd.getOptionValue("merge")), 
           new File(cmd.getArgs()[0]));
         merge.merge();
+        
+        System.exit(0);
       }
       else if(cmd.hasOption("split"))
       {
@@ -55,9 +57,11 @@ public class App
         SplitTEI split = new SplitTEI(new File(cmd.getOptionValue("split")), 
           new File(cmd.getArgs()[0]));
         split.split();
+        
+        
+        System.exit(0);
       }
       
-      System.exit(0);
       
     }
     catch (ParseException ex)
@@ -65,6 +69,10 @@ public class App
       System.err.println(ex.getMessage());
     }
     catch (LaudatioException ex)
+    {
+      System.err.println(ex.getMessage());
+    }
+    catch (UnsupportedOperationException ex)
     {
       System.err.println(ex.getMessage());
     }

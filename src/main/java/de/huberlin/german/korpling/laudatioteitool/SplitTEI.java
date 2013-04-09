@@ -29,7 +29,7 @@ public class SplitTEI
 {
 
   private static final ResourceBundle messages =
-    ResourceBundle.getBundle("Messages");
+    ResourceBundle.getBundle("de/huberlin/german/korpling/laudatioteitool/Messages");
   private final static Logger log = LoggerFactory.getLogger(SplitTEI.class);
   private File inputFile;
   private File outputDirectory;
@@ -125,7 +125,7 @@ public class SplitTEI
       File outputFile = new File(corpusDir, title + ".xml");
       XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
       xmlOut.output(corpusDoc, new FileWriter(outputFile));
-      log.info("Written corpus header {}", outputFile.getPath());
+      log.info(messages.getString("WRITTEN CORPUS HEADER"), outputFile.getPath());
 
     }
   }
@@ -184,7 +184,7 @@ public class SplitTEI
       File outputFile = new File(documentDir, outName + ".xml");
       XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
       xmlOut.output(newDoc, new FileWriter(outputFile));
-      log.info("Written document header {}", outputFile.getPath());
+      log.info(messages.getString("WRITTEN DOCUMENT HEADER"), outputFile.getPath());
       
     }
     
@@ -236,7 +236,7 @@ public class SplitTEI
         if(knownPreparationTitles.contains(corresp))
         {
           outName += corresp;
-          log.warn("preparation header {} exists more than once", corresp);
+          log.warn(messages.getString("MORE THAN ONE PREPARATION HEADER"), corresp);
         }
         else
         {
@@ -248,7 +248,7 @@ public class SplitTEI
       File outputFile = new File(documentDir, outName + ".xml");
       XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
       xmlOut.output(newDoc, new FileWriter(outputFile));
-      log.info("Written preparation header {}", outputFile.getPath());
+      log.info(messages.getString("WRITTEN PREPARATION HEADER"), outputFile.getPath());
       
     }
     
