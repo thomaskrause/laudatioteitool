@@ -20,6 +20,7 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 /**
  *
@@ -33,11 +34,13 @@ public class SplitTEI
   private final static Logger log = LoggerFactory.getLogger(SplitTEI.class);
   private File inputFile;
   private File outputDirectory;
+  private TEIValidator validator;
 
   public SplitTEI(File inputFile, File outputDirectory)
   {
     this.inputFile = inputFile;
     this.outputDirectory = outputDirectory;
+    this.validator = new TEIValidator();
   }
 
   public void split() throws LaudatioException
@@ -71,13 +74,17 @@ public class SplitTEI
     {
       throw new LaudatioException(ex.getLocalizedMessage());
     }
+    catch (SAXException ex)
+    {
+      throw new LaudatioException(ex.getLocalizedMessage());
+    }
     catch (IOException ex)
     {
       throw new LaudatioException(ex.getLocalizedMessage());
     }
   }
 
-  private void extractMainCorpusHeader(Document doc) throws LaudatioException, IOException
+  private void extractMainCorpusHeader(Document doc) throws LaudatioException, IOException, SAXException
   {
 
     Element corpusHeader = doc.getRootElement().getChild("teiHeader", null);
@@ -121,6 +128,8 @@ public class SplitTEI
       Validate.notNull(title, messages.getString(
           "ERROR NO CORPUS TITLE GIVEN"));
 
+      validator.validateCorpus(corpusDoc);
+      
       // save the file with the title as file name
       File outputFile = new File(corpusDir, title + ".xml");
       XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
@@ -130,7 +139,7 @@ public class SplitTEI
     }
   }
   
-  private void extractDocumentHeaders(Document doc) throws LaudatioException, IOException
+  private void extractDocumentHeaders(Document doc) throws LaudatioException, IOException, SAXException
   {
     File documentDir = new File(outputDirectory, "DocumentHeader");
     if (!documentDir.exists() && !documentDir.mkdir())
@@ -161,7 +170,6 @@ public class SplitTEI
       tei.addContent(text);
       
       Element fileDesc = Validate.notNull(tei.getChild("teiHeader", null).getChild("fileDesc", null));
-    
       
       String outName = UUID.randomUUID().toString();
       
@@ -181,6 +189,8 @@ public class SplitTEI
         }
       }
       
+      validator.validateDocument(newDoc);
+      
       File outputFile = new File(documentDir, outName + ".xml");
       XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
       xmlOut.output(newDoc, new FileWriter(outputFile));
@@ -190,7 +200,7 @@ public class SplitTEI
     
   }
   
-  private void extractPreparationSteps(Document doc) throws LaudatioException, IOException
+  private void extractPreparationSteps(Document doc) throws LaudatioException, IOException, SAXException
   {
     HashSet<String> knownPreparationTitles = new HashSet<String>();
     
@@ -244,6 +254,8 @@ public class SplitTEI
           knownPreparationTitles.add(corresp);
         }
       }
+      
+      validator.validatePreparation(newDoc);
       
       File outputFile = new File(documentDir, outName + ".xml");
       XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());

@@ -43,13 +43,13 @@ public class MergeTEI
   private final static Logger log = LoggerFactory.getLogger(MergeTEI.class);
   private File inputDir;
   private File outputFile;
-  private CompactSyntaxSchemaFactory schemaFactory;
+  private TEIValidator validator;
 
   public MergeTEI(File inputDir, File outputFile)
   {
     this.inputDir = inputDir;
     this.outputFile = outputFile;
-    this.schemaFactory = new CompactSyntaxSchemaFactory();
+    this.validator = new TEIValidator();
   }
 
   public void merge() throws LaudatioException
@@ -91,11 +91,7 @@ public class MergeTEI
   private void mergeMainCorpusHeader(Element root) throws SAXException, JDOMException, IOException
   {
     // append global header
-    Schema corpusSchema = schemaFactory.newSchema(
-      new StreamSource(MergeTEI.class.getResourceAsStream(
-      "teiODD_LAUDATIOCorpus.rnc")));
-
-
+    
     File corpusHeaderDir = new File(inputDir, "CorpusHeader");
     Validate.isTrue(corpusHeaderDir.isDirectory());
     File[] corpusHeaderFiles = corpusHeaderDir.listFiles(new FilenameFilter()
@@ -109,8 +105,7 @@ public class MergeTEI
     SAXBuilder sax = new SAXBuilder();
     Document corpusDoc = sax.build(corpusHeaderFiles[0]);
 
-    Validator validator = corpusSchema.newValidator();
-    validator.validate(new JDOMSource(corpusDoc));
+    validator.validateCorpus(corpusDoc);
 
 
     // remove the pending text element
