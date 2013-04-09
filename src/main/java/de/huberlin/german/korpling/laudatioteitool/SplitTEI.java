@@ -61,9 +61,9 @@ public class SplitTEI
     {
       Document doc = sax.build(inputFile);
       
-      extractMainCorpusHeader(doc, outputDirectory);
-      extractDocumentHeaders(doc, outputDirectory);
-      extractPreparationSteps(doc, outputDirectory);
+      extractMainCorpusHeader(doc);
+      extractDocumentHeaders(doc);
+      extractPreparationSteps(doc);
       
 
     }
@@ -77,7 +77,7 @@ public class SplitTEI
     }
   }
 
-  private void extractMainCorpusHeader(Document doc, File outputDirectory) throws LaudatioException, IOException
+  private void extractMainCorpusHeader(Document doc) throws LaudatioException, IOException
   {
 
     Element corpusHeader = doc.getRootElement().getChild("teiHeader", null);
@@ -130,7 +130,7 @@ public class SplitTEI
     }
   }
   
-  private void extractDocumentHeaders(Document doc, File outputDirectory) throws LaudatioException, IOException
+  private void extractDocumentHeaders(Document doc) throws LaudatioException, IOException
   {
     File documentDir = new File(outputDirectory, "DocumentHeader");
     if (!documentDir.exists() && !documentDir.mkdir())
@@ -190,7 +190,7 @@ public class SplitTEI
     
   }
   
-  private void extractPreparationSteps(Document doc, File outputDirectory) throws LaudatioException, IOException
+  private void extractPreparationSteps(Document doc) throws LaudatioException, IOException
   {
     HashSet<String> knownPreparationTitles = new HashSet<String>();
     

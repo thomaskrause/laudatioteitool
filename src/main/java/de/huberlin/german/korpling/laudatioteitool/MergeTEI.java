@@ -36,63 +36,39 @@ import org.xml.sax.SAXException;
  */
 public class MergeTEI
 {
+
   private static final ResourceBundle messages =
-    ResourceBundle.getBundle("de/huberlin/german/korpling/laudatioteitool/Messages");
-  
+    ResourceBundle.getBundle(
+    "de/huberlin/german/korpling/laudatioteitool/Messages");
   private final static Logger log = LoggerFactory.getLogger(MergeTEI.class);
-  
   private File inputDir;
   private File outputFile;
-  
+  private CompactSyntaxSchemaFactory schemaFactory;
+
   public MergeTEI(File inputDir, File outputFile)
   {
-    this.inputDir = inputDir; 
+    this.inputDir = inputDir;
     this.outputFile = outputFile;
+    this.schemaFactory = new CompactSyntaxSchemaFactory();
   }
-  
+
   public void merge() throws LaudatioException
   {
     try
     {
-      if (outputFile.getParentFile() != null && !outputFile.getParentFile().mkdirs())
+      if (outputFile.getParentFile() != null && !outputFile.getParentFile().
+        mkdirs())
       {
-        throw new LaudatioException(messages.getString("COULD NOT CREATE MERGED OUTPUTFILE: I CAN'T CREATE THE DIRECTORIES"));
+        throw new LaudatioException(messages.getString(
+          "COULD NOT CREATE MERGED OUTPUTFILE: I CAN'T CREATE THE DIRECTORIES"));
       }
-      
+
       Namespace teiNS = Namespace.getNamespace("http://www.tei-c.org/ns/1.0");
       Element root = new Element("teiCorpus", teiNS);
       Document mergedDoc = new Document(root);
-      
-      CompactSyntaxSchemaFactory schemaFactory = new CompactSyntaxSchemaFactory();
-      
-      // append global header
-      Schema corpusSchema = schemaFactory.newSchema(
-        new StreamSource(MergeTEI.class.getResourceAsStream("teiODD_LAUDATIOCorpus.rnc")));
-      
-      
-      File corpusHeaderDir = new File(inputDir, "CorpusHeader");
-      Validate.isTrue(corpusHeaderDir.isDirectory());
-      File[] corpusHeaderFiles = corpusHeaderDir.listFiles(new FilenameFilter() 
-      {
-        public boolean accept(File dir, String name)
-        {
-          return name.endsWith(".xml");
-        }
-      });
-      Validate.isTrue(corpusHeaderFiles.length > 0);
-      SAXBuilder sax = new SAXBuilder();
-      Document corpusDoc = sax.build(corpusHeaderFiles[0]);
-      
-      Validator validator = corpusSchema.newValidator();
-      validator.validate(new JDOMSource(corpusDoc));
-      
-      
-      // remove the pending text element
-      corpusDoc.getRootElement().removeChild("text", null);
-      
-      // append to our new root
-      root.addContent(corpusDoc.getRootElement().getChild("teiHeader", null).clone());
-      
+
+      mergeMainCorpusHeader(root);
+
       // output the new XML
       XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
       xmlOut.output(mergedDoc, new FileWriter(outputFile));
@@ -102,15 +78,47 @@ public class MergeTEI
     {
       throw new LaudatioException(ex.getLocalizedMessage());
     }
-    catch(JDOMException ex)
+    catch (JDOMException ex)
     {
       throw new LaudatioException(ex.getLocalizedMessage());
     }
-    catch(IOException ex)
+    catch (IOException ex)
     {
       throw new LaudatioException(ex.getLocalizedMessage());
     }
-    
-    
+  }
+
+  private void mergeMainCorpusHeader(Element root) throws SAXException, JDOMException, IOException
+  {
+    // append global header
+    Schema corpusSchema = schemaFactory.newSchema(
+      new StreamSource(MergeTEI.class.getResourceAsStream(
+      "teiODD_LAUDATIOCorpus.rnc")));
+
+
+    File corpusHeaderDir = new File(inputDir, "CorpusHeader");
+    Validate.isTrue(corpusHeaderDir.isDirectory());
+    File[] corpusHeaderFiles = corpusHeaderDir.listFiles(new FilenameFilter()
+    {
+      public boolean accept(File dir, String name)
+      {
+        return name.endsWith(".xml");
+      }
+    });
+    Validate.isTrue(corpusHeaderFiles.length > 0);
+    SAXBuilder sax = new SAXBuilder();
+    Document corpusDoc = sax.build(corpusHeaderFiles[0]);
+
+    Validator validator = corpusSchema.newValidator();
+    validator.validate(new JDOMSource(corpusDoc));
+
+
+    // remove the pending text element
+    corpusDoc.getRootElement().removeChild("text", null);
+
+    // append to our new root
+    root.addContent(corpusDoc.getRootElement().getChild("teiHeader", null).
+      clone());
+
   }
 }
