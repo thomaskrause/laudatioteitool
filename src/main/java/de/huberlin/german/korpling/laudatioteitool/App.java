@@ -22,8 +22,8 @@ public class App
   public static void main(String[] args)
   {
     Options opts = new Options()
-       .addOption(new Option("merge", messages.getString("MERGE CONTENT FROM INPUT DIRECTORY INTO ONE TEI HEADER")))
-       .addOption(new Option("split", messages.getString("SPLIT ONE TEI HEADER INTO SEVERAL HEADER FILES")));
+       .addOption(new Option("merge", true, messages.getString("MERGE CONTENT FROM INPUT DIRECTORY INTO ONE TEI HEADER")))
+       .addOption(new Option("split", true, messages.getString("SPLIT ONE TEI HEADER INTO SEVERAL HEADER FILES")));
     
     HelpFormatter fmt = new HelpFormatter();
     
@@ -43,6 +43,7 @@ public class App
         }
         MergeTEI merge = new MergeTEI(new File(cmd.getOptionValue("merge")), 
           new File(cmd.getArgs()[0]));
+        merge.merge();
       }
       else if(cmd.hasOption("split"))
       {
@@ -53,13 +54,23 @@ public class App
         }
         SplitTEI split = new SplitTEI(new File(cmd.getOptionValue("split")), 
           new File(cmd.getArgs()[0]));
+        split.split();
       }
+      
+      System.exit(0);
+      
     }
     catch (ParseException ex)
     {
       System.err.println(ex.getMessage());
     }
+    catch (LaudatioException ex)
+    {
+      System.err.println(ex.getMessage());
+    }
     fmt.printHelp("java -jar teitool.jar [options] [output directory/file]", opts);
+    
+    System.exit(1);
     
   }
 }
