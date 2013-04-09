@@ -26,83 +26,42 @@ import org.xml.sax.XMLReader;
  */
 public class SplitTEI
 {
+
   private static final ResourceBundle messages =
     ResourceBundle.getBundle("Messages");
-  
   private final static Logger log = LoggerFactory.getLogger(SplitTEI.class);
-  
   private File inputFile;
   private File outputDirectory;
+
   public SplitTEI(File inputFile, File outputDirectory)
   {
     this.inputFile = inputFile;
     this.outputDirectory = outputDirectory;
   }
-  
+
   public void split() throws LaudatioException
   {
-    if(!outputDirectory.isDirectory() && !outputDirectory.mkdirs())
+    if (!outputDirectory.isDirectory() && !outputDirectory.mkdirs())
     {
-      throw new LaudatioException(messages.getString("COULD NOT CREATE OUTPUT DIRECTORY."));
+      throw new LaudatioException(messages.getString(
+        "COULD NOT CREATE OUTPUT DIRECTORY."));
     }
-    
+
     // check if input file exits
-    if(!inputFile.isFile())
+    if (!inputFile.isFile())
     {
-      throw new LaudatioException(messages.getString("INPUT FILE DOES NOT EXIST"));
+      throw new LaudatioException(messages.
+        getString("INPUT FILE DOES NOT EXIST"));
     }
-    
+
     // read in file
     SAXBuilder sax = new SAXBuilder();
     try
     {
       Document doc = sax.build(inputFile);
-      Element corpusHeader = doc.getRootElement().getChild("teiHeader", null);
-      if(corpusHeader != null)
-      {
-        File corpusDir = new File(outputDirectory, "CorpusHeader");
-        if(!corpusDir.exists() && !corpusDir.mkdir())
-        {
-          throw new LaudatioException(messages.getString("COULD NOT CREATE DIRECTORY") 
-            + corpusDir.getAbsolutePath());
-        }
-        
-        // create the subtree for the global corpus header
-        Namespace teiNS =  Namespace.getNamespace(
-          "http://www.tei-c.org/ns/1.0");
-        Element newRootForCorpus = new Element("TEI",teiNS);
-        newRootForCorpus.addContent(corpusHeader.clone());
-        Document corpusDoc = new Document(newRootForCorpus);
-        
-        // we need to append an empty "text" element after the header
-        Element text = new Element("text", teiNS);
-        text.setText("");
-        newRootForCorpus.addContent(text);
-        
-        // we work with the copy from now
-        corpusHeader = newRootForCorpus.getChild("teiHeader", null);
-        if(corpusHeader.getChild("fileDesc", null) != null 
-          && corpusHeader.getChild("fileDesc", null).getChild("titleStmt", null) != null
-          && corpusHeader.getChild("fileDesc", null)
-            .getChild("titleStmt", null)
-            .getChildTextNormalize("title", null) != null)
-        {
-          String title =  corpusHeader.getChild("fileDesc", null)
-            .getChild("titleStmt", null)
-            .getChildTextNormalize("title", null);
-          
-          // save the file with the title as file name
-          File outputFile = new File(corpusDir, title + ".xml");
-          XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
-          xmlOut.output(corpusDoc, new FileWriter(outputFile));
-          log.info("Written corpus header {}", outputFile.getAbsolutePath());
-        }
-        else
-        {
-          throw new LaudatioException(messages.getString("ERROR NO CORPUS TITLE GIVEN"));
-        }
-      }
       
+      extractMainCorpusHeader(doc, outputDirectory);
+
     }
     catch (JDOMException ex)
     {
@@ -112,7 +71,59 @@ public class SplitTEI
     {
       throw new LaudatioException(ex.getLocalizedMessage());
     }
-    
-    
+  }
+
+  private void extractMainCorpusHeader(Document doc, File outputDirectory) throws LaudatioException, IOException
+  {
+
+    Element corpusHeader = doc.getRootElement().getChild("teiHeader", null);
+    if (corpusHeader != null)
+    {
+      File corpusDir = new File(outputDirectory, "CorpusHeader");
+      if (!corpusDir.exists() && !corpusDir.mkdir())
+      {
+        throw new LaudatioException(messages.getString(
+          "COULD NOT CREATE DIRECTORY")
+          + corpusDir.getAbsolutePath());
+      }
+
+      // create the subtree for the global corpus header
+      Namespace teiNS = Namespace.getNamespace(
+        "http://www.tei-c.org/ns/1.0");
+      Element newRootForCorpus = new Element("TEI", teiNS);
+      newRootForCorpus.addContent(corpusHeader.clone());
+      Document corpusDoc = new Document(newRootForCorpus);
+
+      // we need to append an empty "text" element after the header
+      Element text = new Element("text", teiNS);
+      text.setText("");
+      newRootForCorpus.addContent(text);
+
+      // we work with the copy from now
+      corpusHeader = newRootForCorpus.getChild("teiHeader", null);
+      if (corpusHeader.getChild("fileDesc", null) != null
+        && corpusHeader.getChild("fileDesc", null).getChild("titleStmt", null)
+        != null
+        && corpusHeader.getChild("fileDesc", null)
+        .getChild("titleStmt", null)
+        .getChildTextNormalize("title", null) != null)
+      {
+        String title = corpusHeader.getChild("fileDesc", null)
+          .getChild("titleStmt", null)
+          .getChildTextNormalize("title", null);
+
+        // save the file with the title as file name
+        File outputFile = new File(corpusDir, title + ".xml");
+        XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
+        xmlOut.output(corpusDoc, new FileWriter(outputFile));
+        log.info("Written corpus header {}", outputFile.getAbsolutePath());
+      }
+      else
+      {
+        throw new LaudatioException(messages.getString(
+          "ERROR NO CORPUS TITLE GIVEN"));
+      }
+    }
+
   }
 }
