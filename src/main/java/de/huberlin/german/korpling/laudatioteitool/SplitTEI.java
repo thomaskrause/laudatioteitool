@@ -76,7 +76,7 @@ public class SplitTEI
     }
     catch (SAXException ex)
     {
-      throw new LaudatioException(ex.getLocalizedMessage());
+      throw new LaudatioException(TEIValidator.getSAXParserError(ex));
     }
     catch (IOException ex)
     {

@@ -16,6 +16,7 @@ import org.jdom2.Document;
 import org.jdom2.transform.JDOMSource;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  *
@@ -72,5 +73,21 @@ public class TEIValidator
   {
     Validate.notNull(preparationValidator);
     preparationValidator.validate(new JDOMSource(doc));
+  }
+  
+  public static String getSAXParserError(Throwable ex)
+  {
+    if(ex == null)
+    {
+      return "unknown validation exception";
+    }
+    else if(ex instanceof SAXParseException)
+    {
+      return ((SAXParseException) ex).toString();
+    }
+    else
+    {
+      return getSAXParserError(ex.getCause());
+    }
   }
 }

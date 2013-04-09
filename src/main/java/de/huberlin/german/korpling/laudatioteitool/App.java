@@ -71,6 +71,10 @@ public class App
     catch (LaudatioException ex)
     {
       System.err.println(ex.getMessage());
+      if(ex.getCause() != null)
+      {
+        ex.printStackTrace();
+      }
     }
     catch (UnsupportedOperationException ex)
     {
