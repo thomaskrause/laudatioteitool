@@ -20,7 +20,6 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
 /**
  *
@@ -56,17 +55,19 @@ public class MergeTEI
       }
 
       Namespace teiNS = Namespace.getNamespace("http://www.tei-c.org/ns/1.0");
-      Element root = new Element("teiCorpus", teiNS);
-      Document mergedDoc = new Document(root);
-
+      Element root = new Element("teiCorpus", teiNS);      
       Element documentRoot = new Element("teiCorpus", teiNS);
-      root.addContent(documentRoot);
-      
       Element preparationRoot = new Element("teiCorpus", teiNS);
-      documentRoot.addContent(preparationRoot);
       
       mergeMainCorpusHeader(root);
       mergeDocumentHeader(documentRoot);
+      mergePreparationHeader(preparationRoot);
+
+      root.addContent(documentRoot);
+      documentRoot.addContent(documentRoot.getChildren().size(), preparationRoot);
+      
+      
+      Document mergedDoc = new Document(root);
 
       // output the new XML
       XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
@@ -118,7 +119,7 @@ public class MergeTEI
   
   private void mergeDocumentHeader(Element root) throws SAXException, JDOMException, IOException
   {
-    // append global header
+    // append document headers
     
     File documentHeaderDir = new File(inputDir, "DocumentHeader");
     Validate.isTrue(documentHeaderDir.isDirectory());
@@ -143,6 +144,37 @@ public class MergeTEI
 
       // append to our new root
       root.addContent(documentDoc.getRootElement().getChild("teiHeader", null).
+        clone());
+    }
+  }
+  
+  private void mergePreparationHeader(Element root) throws SAXException, JDOMException, IOException
+  {
+    // append preparation headers
+    
+    File preparationHeaderDir = new File(inputDir, "PreparationHeader");
+    Validate.isTrue(preparationHeaderDir.isDirectory());
+    File[] preparationHeaderFiles = preparationHeaderDir.listFiles(new FilenameFilter()
+    {
+      public boolean accept(File dir, String name)
+      {
+        return name.endsWith(".xml");
+      }
+    });
+    Validate.isTrue(preparationHeaderFiles.length > 0);
+    SAXBuilder sax = new SAXBuilder();
+    
+    for(File f : preparationHeaderFiles)
+    {
+      Document preparation = sax.build(f);
+
+      validator.validatePreparation(preparation);
+
+      // remove the pending text element
+      preparation.getRootElement().removeChild("text", null);
+
+      // append to our new root
+      root.addContent(preparation.getRootElement().getChild("teiHeader", null).
         clone());
     }
   }
