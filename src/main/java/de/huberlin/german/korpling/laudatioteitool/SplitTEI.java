@@ -7,6 +7,7 @@ package de.huberlin.german.korpling.laudatioteitool;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.UUID;
 import org.apache.commons.lang3.Validate;
@@ -15,12 +16,10 @@ import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
 import org.jdom2.input.SAXBuilder;
-import org.jdom2.input.sax.XMLReaders;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.XMLReader;
 
 /**
  *
@@ -64,6 +63,7 @@ public class SplitTEI
       
       extractMainCorpusHeader(doc, outputDirectory);
       extractDocumentHeaders(doc, outputDirectory);
+      extractPreparationSteps(doc, outputDirectory);
       
 
     }
@@ -160,8 +160,8 @@ public class SplitTEI
       text.setText("");
       tei.addContent(text);
       
-      Element fileDesc = tei.getChild("teiHeader", null).getChild("fileDesc", null);
-      Validate.notNull(fileDesc);
+      Element fileDesc = Validate.notNull(tei.getChild("teiHeader", null).getChild("fileDesc", null));
+    
       
       String outName = UUID.randomUUID().toString();
       
@@ -172,8 +172,8 @@ public class SplitTEI
       }
       else
       {
-        Element titleStmt = fileDesc.getChild("titleStmt", null);
-        Validate.notNull(titleStmt);
+        Element titleStmt = Validate.notNull(fileDesc.getChild("titleStmt", null));
+        
         String title = titleStmt.getChildText("title", null);
         if(title != null)
         {
@@ -185,6 +185,70 @@ public class SplitTEI
       XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
       xmlOut.output(newDoc, new FileWriter(outputFile));
       log.info("Written document header {}", outputFile.getPath());
+      
+    }
+    
+  }
+  
+  private void extractPreparationSteps(Document doc, File outputDirectory) throws LaudatioException, IOException
+  {
+    HashSet<String> knownPreparationTitles = new HashSet<String>();
+    
+    File documentDir = new File(outputDirectory, "PreparationHeader");
+    if (!documentDir.exists() && !documentDir.mkdir())
+    {
+      throw new LaudatioException(messages.getString(
+        "COULD NOT CREATE DIRECTORY")
+        + documentDir.getAbsolutePath());
+    }
+    
+    Validate.notNull(doc.getRootElement()
+      .getChild("teiCorpus", null));
+    Element preparationRoot = Validate.notNull(doc.getRootElement()
+      .getChild("teiCorpus", null).getChild("teiCorpus", null));
+    
+    
+    for(Element preparationHeader : preparationRoot.getChildren("teiHeader", null))
+    {
+      Validate.matchesPattern(preparationHeader.getAttributeValue("type"), "PreparationHeader");
+      
+      // create the subtree for the global corpus header
+      Namespace teiNS = Namespace.getNamespace(
+        "http://www.tei-c.org/ns/1.0");
+      Element tei = new Element("TEI", teiNS);
+      tei.addContent(preparationHeader.clone());
+      Document newDoc = new Document(tei);
+      
+      // we need to append an empty "text" element after the header
+      Element text = new Element("text", teiNS);
+      text.setText("");
+      tei.addContent(text);
+      
+      Element fileDesc = Validate.notNull(tei.getChild("teiHeader", null).getChild("fileDesc", null));
+      
+      String outName = UUID.randomUUID().toString();
+
+      Element titleStmt = Validate.notNull(fileDesc.getChild("titleStmt", null));
+      Element title = Validate.notNull(titleStmt.getChild("title", null));
+      String corresp = title.getAttributeValue("corresp");
+      if(corresp != null)
+      {
+        if(knownPreparationTitles.contains(corresp))
+        {
+          outName += corresp;
+          log.warn("preparation header {} exists more than once", corresp);
+        }
+        else
+        {
+          outName = corresp;
+          knownPreparationTitles.add(corresp);
+        }
+      }
+      
+      File outputFile = new File(documentDir, outName + ".xml");
+      XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
+      xmlOut.output(newDoc, new FileWriter(outputFile));
+      log.info("Written preparation header {}", outputFile.getPath());
       
     }
     
