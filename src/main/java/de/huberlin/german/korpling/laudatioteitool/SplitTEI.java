@@ -15,15 +15,13 @@
  */
 package de.huberlin.german.korpling.laudatioteitool;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.UUID;
-import org.apache.commons.collections.Bag;
-import org.apache.commons.collections.bag.HashBag;
 import org.apache.commons.lang3.Validate;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -35,7 +33,6 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
 /**
  *
@@ -231,7 +228,7 @@ public class SplitTEI
   private TEIValidator.Errors extractPreparationSteps(Document doc) throws LaudatioException, IOException, SAXException
   {
     TEIValidator validator = new TEIPreparationValidator();
-    Bag knownPreparationTitles = new HashBag();
+    Multiset<String> knownPreparationTitles = HashMultiset.create();
     
     File documentDir = new File(outputDirectory, "PreparationHeader");
     if (!documentDir.exists() && !documentDir.mkdir())
@@ -274,7 +271,7 @@ public class SplitTEI
         if(knownPreparationTitles.contains(corresp))
         {
           knownPreparationTitles.add(corresp);
-          outName = corresp +  "_" + knownPreparationTitles.getCount(corresp);
+          outName = corresp +  "_" + knownPreparationTitles.count(corresp);
           log.warn(messages.getString("MORE THAN ONE PREPARATION HEADER"), corresp);
         }
         else

@@ -15,7 +15,10 @@
  */
 package de.huberlin.german.korpling.laudatioteitool;
 
+import com.google.common.io.Files;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ResourceBundle;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -24,6 +27,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Hello world!
@@ -31,15 +36,18 @@ import org.apache.commons.cli.PosixParser;
  */
 public class App
 {
+  private static final Logger log = LoggerFactory.getLogger(App.class);
+  
   private static final ResourceBundle messages =
     ResourceBundle.getBundle("de/huberlin/german/korpling/laudatioteitool/Messages");
 
   public static void main(String[] args)
   {
     Options opts = new Options()
-       .addOption(new Option("merge", true, messages.getString("MERGE CONTENT FROM INPUT DIRECTORY INTO ONE TEI HEADER")))
-       .addOption(new Option("split", true, messages.getString("SPLIT ONE TEI HEADER INTO SEVERAL HEADER FILES")))
-       .addOption(new Option("help", false, messages.getString("SHOW THIS HELP")));
+      .addOption(new Option("merge", true, messages.getString("MERGE CONTENT FROM INPUT DIRECTORY INTO ONE TEI HEADER")))
+      .addOption(new Option("split", true, messages.getString("SPLIT ONE TEI HEADER INTO SEVERAL HEADER FILES")))
+      .addOption(new Option("validate", true, messages.getString("VALIDATE DIRECTORY OR FILE")))
+      .addOption(new Option("help", false, messages.getString("SHOW THIS HELP")));
     
     HelpFormatter fmt = new HelpFormatter();
     String usage = "java -jar teitool.jar [options] [output directory/file]";
@@ -54,6 +62,10 @@ public class App
       if(cmd.hasOption("help"))
       {
         fmt.printHelp(usage, opts);
+      }
+      else if(cmd.hasOption("validate"))
+      {
+        validate(cmd.getOptionValue("validate"));
       }
       else if(cmd.hasOption("merge"))
       {
@@ -104,4 +116,79 @@ public class App
     System.exit(1);
     
   }
+  
+  private static void validate(String arg)
+  {
+    File f = new File(arg);
+    if(!f.exists())
+    {
+      System.err.println("File " + f.getAbsolutePath() + " does not exist");
+      System.exit(-2);
+    }
+    
+    if(f.isDirectory())
+    {
+      try
+      {
+        File out = File.createTempFile("tmpvalidation", ".xml");
+        out.deleteOnExit();
+        MergeTEI merge = new MergeTEI(f, out);
+        merge.merge();
+        
+        out.delete();
+        
+        // if we got until there without exception the document is valid
+        System.out.println("Validation successfull");
+        System.exit(0);
+      }
+      catch (IOException ex)
+      {
+        log.error("Could not create temporary file", ex);
+      }
+      catch (LaudatioException ex)
+      {
+        System.err.println(ex.getLocalizedMessage());
+      }
+    }
+    else
+    {
+      try
+      {
+        File out = Files.createTempDir();
+        
+        SplitTEI split = new SplitTEI(f, out);
+        split.split();
+        
+        deleteTemporaryDirectory(out);
+        
+        // if we got until there without exception the document is valid
+        System.out.println("Validation successfull");
+        System.exit(0);
+      }
+      catch (IOException ex)
+      {
+        log.error("Could not create temporary file", ex);
+      }
+      catch (LaudatioException ex)
+      {
+        System.err.println(ex.getLocalizedMessage());
+      }
+    }
+
+    // non-valid per default
+    System.exit(1);
+  }
+  
+  private static void deleteTemporaryDirectory(File f) throws IOException {
+  if (f.isDirectory()) {
+    for (File c : f.listFiles())
+    {
+      deleteTemporaryDirectory(c);
+    }
+  }
+  if (!f.delete())
+  {
+    throw new IOException("Failed to delete file: " + f);
+  }
+}
 }

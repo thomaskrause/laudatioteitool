@@ -56,7 +56,8 @@ public class MergeTEI
   {
     try
     {
-      if (outputFile.getParentFile() != null && !outputFile.getParentFile().
+      if (outputFile.getParentFile() != null && !outputFile.getParentFile().exists() 
+        && !outputFile.getParentFile().
         mkdirs())
       {
         throw new LaudatioException(messages.getString(
