@@ -15,12 +15,12 @@
  */
 package de.huberlin.german.korpling.laudatioteitool;
 
+import com.google.common.base.Preconditions;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ResourceBundle;
-import org.apache.commons.lang3.Validate;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -105,7 +105,7 @@ public class MergeTEI
     // append global header
 
     File corpusHeaderDir = new File(inputDir, "CorpusHeader");
-    Validate.isTrue(corpusHeaderDir.isDirectory());
+    Preconditions.checkArgument(corpusHeaderDir.isDirectory());
     File[] corpusHeaderFiles = corpusHeaderDir.listFiles(new FilenameFilter()
     {
       @Override
@@ -114,7 +114,7 @@ public class MergeTEI
         return name.endsWith(".xml");
       }
     });
-    Validate.isTrue(corpusHeaderFiles.length > 0);
+    Preconditions.checkArgument(corpusHeaderFiles.length > 0);
 
     File headerFile = corpusHeaderFiles[0];
     TEIValidator validator = new TEICorpusValidator();
@@ -143,7 +143,7 @@ public class MergeTEI
     // append document headers
 
     File documentHeaderDir = new File(inputDir, "DocumentHeader");
-    Validate.isTrue(documentHeaderDir.isDirectory());
+    Preconditions.checkArgument(documentHeaderDir.isDirectory());
     File[] documentHeaderFiles = documentHeaderDir.listFiles(
       new FilenameFilter()
     {
@@ -153,7 +153,7 @@ public class MergeTEI
         return name.endsWith(".xml");
       }
     });
-    Validate.isTrue(documentHeaderFiles.length > 0);
+    Preconditions.checkArgument(documentHeaderFiles.length > 0);
     SAXBuilder sax = new SAXBuilder();
     TEIValidator validator = new TEIDocumentValidator();
     
@@ -186,7 +186,7 @@ public class MergeTEI
     // append preparation headers
 
     File preparationHeaderDir = new File(inputDir, "PreparationHeader");
-    Validate.isTrue(preparationHeaderDir.isDirectory());
+    Preconditions.checkState(preparationHeaderDir.isDirectory());
     File[] preparationHeaderFiles = preparationHeaderDir.listFiles(
       new FilenameFilter()
     {
@@ -196,7 +196,7 @@ public class MergeTEI
         return name.endsWith(".xml");
       }
     });
-    Validate.isTrue(preparationHeaderFiles.length > 0);
+    Preconditions.checkState(preparationHeaderFiles.length > 0);
     SAXBuilder sax = new SAXBuilder();
     TEIValidator validator = new TEIPreparationValidator();
 

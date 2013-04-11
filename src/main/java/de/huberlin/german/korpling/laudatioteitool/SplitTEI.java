@@ -15,6 +15,7 @@
  */
 package de.huberlin.german.korpling.laudatioteitool;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import java.io.File;
@@ -22,7 +23,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ResourceBundle;
 import java.util.UUID;
-import org.apache.commons.lang3.Validate;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
@@ -131,20 +131,20 @@ public class SplitTEI
 
       // we work with the copy from now
       corpusHeader = newRootForCorpus.getChild("teiHeader", null);
-      Validate.notNull(corpusHeader, messages.getString(
+      Preconditions.checkNotNull(corpusHeader, messages.getString(
           "ERROR NO CORPUS TITLE GIVEN"));
       
-      Validate.matchesPattern(corpusHeader.getAttributeValue("type"), "CorpusHeader");
+      Preconditions.checkState("CorpusHeader".equals(corpusHeader.getAttributeValue("type")));
       
-      Validate.notNull(corpusHeader.getChild("fileDesc", null), messages.getString(
+      Preconditions.checkNotNull(corpusHeader.getChild("fileDesc", null), messages.getString(
           "ERROR NO CORPUS TITLE GIVEN"));
-      Validate.notNull(corpusHeader.getChild("fileDesc", null).getChild("titleStmt", null), messages.getString(
+      Preconditions.checkNotNull(corpusHeader.getChild("fileDesc", null).getChild("titleStmt", null), messages.getString(
           "ERROR NO CORPUS TITLE GIVEN"));
       
       String title = corpusHeader.getChild("fileDesc", null)
         .getChild("titleStmt", null)
         .getChildTextNormalize("title", null);
-      Validate.notNull(title, messages.getString(
+      Preconditions.checkNotNull(title, messages.getString(
           "ERROR NO CORPUS TITLE GIVEN"));
 
       // save the file with the title as file name
@@ -172,13 +172,13 @@ public class SplitTEI
         + documentDir.getAbsolutePath());
     }
     
-    Element documentRoot = Validate.notNull(doc.getRootElement()
+    Element documentRoot = Preconditions.checkNotNull(doc.getRootElement()
       .getChild("teiCorpus", null));
     
     
     for(Element docHeader : documentRoot.getChildren("teiHeader", null))
     {
-      Validate.matchesPattern(docHeader.getAttributeValue("type"), "DocumentHeader");
+      Preconditions.checkState("DocumentHeader".equals(docHeader.getAttributeValue("type")));
       
       // create the subtree for the global corpus header
       Namespace teiNS = Namespace.getNamespace(
@@ -192,7 +192,7 @@ public class SplitTEI
       text.setText("");
       tei.addContent(text);
       
-      Element fileDesc = Validate.notNull(tei.getChild("teiHeader", null).getChild("fileDesc", null));
+      Element fileDesc = Preconditions.checkNotNull(tei.getChild("teiHeader", null).getChild("fileDesc", null));
       
       String outName = UUID.randomUUID().toString();
       
@@ -203,7 +203,7 @@ public class SplitTEI
       }
       else
       {
-        Element titleStmt = Validate.notNull(fileDesc.getChild("titleStmt", null));
+        Element titleStmt = Preconditions.checkNotNull(fileDesc.getChild("titleStmt", null));
         
         String title = titleStmt.getChildText("title", null);
         if(title != null)
@@ -238,14 +238,14 @@ public class SplitTEI
         + documentDir.getAbsolutePath());
     }
     
-    Validate.notNull(doc.getRootElement()
+    Preconditions.checkNotNull(doc.getRootElement()
       .getChild("teiCorpus", null));
-    Element preparationRoot = Validate.notNull(doc.getRootElement()
+    Element preparationRoot = Preconditions.checkNotNull(doc.getRootElement()
       .getChild("teiCorpus", null).getChild("teiCorpus", null));
     
     for(Element preparationHeader : preparationRoot.getChildren("teiHeader", null))
     {
-      Validate.matchesPattern(preparationHeader.getAttributeValue("type"), "PreparationHeader");
+      Preconditions.checkState("PreparationHeader".equals(preparationHeader.getAttributeValue("type")));
       
       // create the subtree for the global corpus header
       Namespace teiNS = Namespace.getNamespace(
@@ -259,12 +259,12 @@ public class SplitTEI
       text.setText("");
       tei.addContent(text);
       
-      Element fileDesc = Validate.notNull(tei.getChild("teiHeader", null).getChild("fileDesc", null));
+      Element fileDesc = Preconditions.checkNotNull(tei.getChild("teiHeader", null).getChild("fileDesc", null));
       
       String outName = UUID.randomUUID().toString();
 
-      Element titleStmt = Validate.notNull(fileDesc.getChild("titleStmt", null));
-      Element title = Validate.notNull(titleStmt.getChild("title", null));
+      Element titleStmt = Preconditions.checkNotNull(fileDesc.getChild("titleStmt", null));
+      Element title = Preconditions.checkNotNull(titleStmt.getChild("title", null));
       String corresp = title.getAttributeValue("corresp");
       if(corresp != null)
       {

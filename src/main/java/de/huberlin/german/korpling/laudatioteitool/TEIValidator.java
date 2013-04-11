@@ -15,6 +15,10 @@
  */
 package de.huberlin.german.korpling.laudatioteitool;
 
+import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.common.io.Files;
 import com.thaiopensource.relaxng.jaxp.CompactSyntaxSchemaFactory;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,13 +28,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.TreeMap;
-import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
-import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -64,7 +63,7 @@ public abstract class TEIValidator
   public boolean validate(final File file) throws IOException
   {
     Validator validator = getValidator();
-    Validate.notNull(validator);
+    Preconditions.checkNotNull(validator);
 
     validator.setErrorHandler(new ErrorHandler()
     {
@@ -148,11 +147,11 @@ public abstract class TEIValidator
       
     for (Map.Entry<File, List<SAXParseException>> entry : errors.entrySet())
     {
-      List<?> linesRaw = new LinkedList<String>();
+      List<String> linesRaw = new LinkedList<String>();
       try
       {
         // split lines so we can reuse them later
-        linesRaw = FileUtils.readLines(entry.getKey(), "UTF-8");
+        linesRaw = Files.readLines(entry.getKey(), Charsets.UTF_8);
       }
       catch (IOException ex)
       {
@@ -165,7 +164,7 @@ public abstract class TEIValidator
         + (entry.getValue().size() > 1 ? " errors" : " error");
       sb.append(header).append("\n");
 
-      sb.append(StringUtils.repeat("=", header.length())).append("\n");
+      sb.append(Strings.repeat("=", header.length())).append("\n");
 
       ListIterator<SAXParseException> it = entry.getValue().listIterator();
       while (it.hasNext())
@@ -186,9 +185,9 @@ public abstract class TEIValidator
         sb.append(line).append("\n");
 
         // output a marker for the columns
-        sb.append(StringUtils.leftPad("^", columnNr - 1)).append("\n");
+        sb.append(Strings.padStart("^", columnNr, ' ')).append("\n");
 
-        sb.append(StringUtils.repeat("-", Math.min(80, Math.
+        sb.append(Strings.repeat("-", Math.min(80, Math.
           max(caption.length(),
           line.length()))))
           .append("\n");
