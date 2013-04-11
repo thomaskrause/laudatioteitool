@@ -18,9 +18,12 @@ package de.huberlin.german.korpling.laudatioteitool;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.UUID;
+import org.apache.commons.collections.Bag;
+import org.apache.commons.collections.bag.HashBag;
 import org.apache.commons.lang3.Validate;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -32,6 +35,7 @@ import org.jdom2.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 /**
  *
@@ -45,13 +49,11 @@ public class SplitTEI
   private final static Logger log = LoggerFactory.getLogger(SplitTEI.class);
   private File inputFile;
   private File outputDirectory;
-  private TEIValidator validator;
 
   public SplitTEI(File inputFile, File outputDirectory)
   {
     this.inputFile = inputFile;
     this.outputDirectory = outputDirectory;
-    this.validator = new TEIValidator();
   }
 
   public void split() throws LaudatioException
@@ -75,10 +77,17 @@ public class SplitTEI
     {
       Document doc = sax.build(inputFile);
       
-      extractMainCorpusHeader(doc);
-      extractDocumentHeaders(doc);
-      extractPreparationSteps(doc);
+      TEIValidator.Errors errors = new TEIValidator.Errors();
+     
+      errors.putAll(extractMainCorpusHeader(doc));
+      errors.putAll(extractDocumentHeaders(doc));
+      errors.putAll(extractPreparationSteps(doc));
       
+      if(!errors.isEmpty())
+      {
+        System.out.println(TEIValidator.formatParserExceptions(errors));
+        throw new LaudatioException("Source document was invalid");
+      }
 
     }
     catch (JDOMException ex)
@@ -95,10 +104,12 @@ public class SplitTEI
     }
   }
 
-  private void extractMainCorpusHeader(Document doc) throws LaudatioException, IOException, SAXException
+  private TEIValidator.Errors extractMainCorpusHeader(Document doc) throws LaudatioException, IOException, SAXException
   {
-
+    TEIValidator validator = new TEICorpusValidator();
+    
     Element corpusHeader = doc.getRootElement().getChild("teiHeader", null);
+    
     if (corpusHeader != null)
     {
       File corpusDir = new File(outputDirectory, "CorpusHeader");
@@ -139,19 +150,23 @@ public class SplitTEI
       Validate.notNull(title, messages.getString(
           "ERROR NO CORPUS TITLE GIVEN"));
 
-      validator.validateCorpus(corpusDoc);
-      
       // save the file with the title as file name
       File outputFile = new File(corpusDir, title + ".xml");
       XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
       xmlOut.output(corpusDoc, new FileWriter(outputFile));
       log.info(messages.getString("WRITTEN CORPUS HEADER"), outputFile.getPath());
-
+      
+      
+      validator.validate(outputFile);
+      
     }
+    return validator.getErrors();
   }
   
-  private void extractDocumentHeaders(Document doc) throws LaudatioException, IOException, SAXException
+  private TEIValidator.Errors extractDocumentHeaders(Document doc) throws LaudatioException, IOException, SAXException
   {
+    TEIValidator validator = new TEIDocumentValidator();
+    
     File documentDir = new File(outputDirectory, "DocumentHeader");
     if (!documentDir.exists() && !documentDir.mkdir())
     {
@@ -200,20 +215,23 @@ public class SplitTEI
         }
       }
       
-      validator.validateDocument(newDoc);
       
       File outputFile = new File(documentDir, outName + ".xml");
       XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
       xmlOut.output(newDoc, new FileWriter(outputFile));
       log.info(messages.getString("WRITTEN DOCUMENT HEADER"), outputFile.getPath());
       
+      
+      validator.validate(outputFile);
+      
     }
-    
+    return validator.getErrors();
   }
   
-  private void extractPreparationSteps(Document doc) throws LaudatioException, IOException, SAXException
+  private TEIValidator.Errors extractPreparationSteps(Document doc) throws LaudatioException, IOException, SAXException
   {
-    HashSet<String> knownPreparationTitles = new HashSet<String>();
+    TEIValidator validator = new TEIPreparationValidator();
+    Bag knownPreparationTitles = new HashBag();
     
     File documentDir = new File(outputDirectory, "PreparationHeader");
     if (!documentDir.exists() && !documentDir.mkdir())
@@ -227,7 +245,6 @@ public class SplitTEI
       .getChild("teiCorpus", null));
     Element preparationRoot = Validate.notNull(doc.getRootElement()
       .getChild("teiCorpus", null).getChild("teiCorpus", null));
-    
     
     for(Element preparationHeader : preparationRoot.getChildren("teiHeader", null))
     {
@@ -256,7 +273,8 @@ public class SplitTEI
       {
         if(knownPreparationTitles.contains(corresp))
         {
-          outName += corresp;
+          knownPreparationTitles.add(corresp);
+          outName = corresp +  "_" + knownPreparationTitles.getCount(corresp);
           log.warn(messages.getString("MORE THAN ONE PREPARATION HEADER"), corresp);
         }
         else
@@ -266,15 +284,15 @@ public class SplitTEI
         }
       }
       
-      validator.validatePreparation(newDoc);
-      
       File outputFile = new File(documentDir, outName + ".xml");
       XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
       xmlOut.output(newDoc, new FileWriter(outputFile));
       log.info(messages.getString("WRITTEN PREPARATION HEADER"), outputFile.getPath());
       
+      validator.validate(outputFile);
+      
     }
-    
+    return validator.getErrors();
   }
   
 }

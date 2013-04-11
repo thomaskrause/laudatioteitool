@@ -38,9 +38,11 @@ public class App
   {
     Options opts = new Options()
        .addOption(new Option("merge", true, messages.getString("MERGE CONTENT FROM INPUT DIRECTORY INTO ONE TEI HEADER")))
-       .addOption(new Option("split", true, messages.getString("SPLIT ONE TEI HEADER INTO SEVERAL HEADER FILES")));
+       .addOption(new Option("split", true, messages.getString("SPLIT ONE TEI HEADER INTO SEVERAL HEADER FILES")))
+       .addOption(new Option("help", false, messages.getString("SHOW THIS HELP")));
     
     HelpFormatter fmt = new HelpFormatter();
+    String usage = "java -jar teitool.jar [options] [output directory/file]";
     
     try
     {
@@ -49,7 +51,11 @@ public class App
      
       CommandLine cmd = cliParser.parse(opts, args);
       
-      if(cmd.hasOption("merge"))
+      if(cmd.hasOption("help"))
+      {
+        fmt.printHelp(usage, opts);
+      }
+      else if(cmd.hasOption("merge"))
       {
         if(cmd.getArgs().length != 1)
         {
@@ -72,9 +78,11 @@ public class App
         SplitTEI split = new SplitTEI(new File(cmd.getOptionValue("split")), 
           new File(cmd.getArgs()[0]));
         split.split();
-        
-        
         System.exit(0);
+      }
+      else
+      {
+        fmt.printHelp(usage, opts);
       }
       
       
@@ -82,20 +90,16 @@ public class App
     catch (ParseException ex)
     {
       System.err.println(ex.getMessage());
+      fmt.printHelp(usage, opts);
     }
     catch (LaudatioException ex)
     {
       System.err.println(ex.getMessage());
-      if(ex.getCause() != null)
-      {
-        ex.printStackTrace();
-      }
     }
     catch (UnsupportedOperationException ex)
     {
       System.err.println(ex.getMessage());
     }
-    fmt.printHelp("java -jar teitool.jar [options] [output directory/file]", opts);
     
     System.exit(1);
     

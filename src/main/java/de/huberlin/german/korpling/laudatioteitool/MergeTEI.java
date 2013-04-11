@@ -45,13 +45,11 @@ public class MergeTEI
   private final static Logger log = LoggerFactory.getLogger(MergeTEI.class);
   private File inputDir;
   private File outputFile;
-  private TEIValidator validator;
 
   public MergeTEI(File inputDir, File outputFile)
   {
     this.inputDir = inputDir;
     this.outputFile = outputFile;
-    this.validator = new TEIValidator();
   }
 
   public void merge() throws LaudatioException
@@ -66,18 +64,19 @@ public class MergeTEI
       }
 
       Namespace teiNS = Namespace.getNamespace("http://www.tei-c.org/ns/1.0");
-      Element root = new Element("teiCorpus", teiNS);      
+      Element root = new Element("teiCorpus", teiNS);
       Element documentRoot = new Element("teiCorpus", teiNS);
       Element preparationRoot = new Element("teiCorpus", teiNS);
-      
+
       mergeMainCorpusHeader(root);
       mergeDocumentHeader(documentRoot);
       mergePreparationHeader(preparationRoot);
 
       root.addContent(documentRoot);
-      documentRoot.addContent(documentRoot.getChildren().size(), preparationRoot);
-      
-      
+      documentRoot.
+        addContent(documentRoot.getChildren().size(), preparationRoot);
+
+
       Document mergedDoc = new Document(root);
 
       // output the new XML
@@ -87,7 +86,7 @@ public class MergeTEI
     }
     catch (SAXException ex)
     {
-      throw new LaudatioException(TEIValidator.getSAXParserError(ex));
+      throw new LaudatioException(ex.getLocalizedMessage());
     }
     catch (JDOMException ex)
     {
@@ -99,43 +98,55 @@ public class MergeTEI
     }
   }
 
-  private void mergeMainCorpusHeader(Element root) throws SAXException, JDOMException, IOException
+  private void mergeMainCorpusHeader(Element root) throws SAXException,
+    IOException, LaudatioException, JDOMException
   {
     // append global header
-    
+
     File corpusHeaderDir = new File(inputDir, "CorpusHeader");
     Validate.isTrue(corpusHeaderDir.isDirectory());
     File[] corpusHeaderFiles = corpusHeaderDir.listFiles(new FilenameFilter()
     {
+      @Override
       public boolean accept(File dir, String name)
       {
         return name.endsWith(".xml");
       }
     });
     Validate.isTrue(corpusHeaderFiles.length > 0);
-    SAXBuilder sax = new SAXBuilder();
-    Document corpusDoc = sax.build(corpusHeaderFiles[0]);
 
-    validator.validateCorpus(corpusDoc);
+    File headerFile = corpusHeaderFiles[0];
+    TEIValidator validator = new TEICorpusValidator();
+    if (validator.validate(headerFile))
+    {
+      SAXBuilder sax = new SAXBuilder();
+      Document corpusDoc = sax.build(headerFile);
+      // remove the pending text element
+      corpusDoc.getRootElement().removeChild("text", null);
 
-
-    // remove the pending text element
-    corpusDoc.getRootElement().removeChild("text", null);
-
-    // append to our new root
-    root.addContent(corpusDoc.getRootElement().getChild("teiHeader", null).
-      clone());
+      // append to our new root
+      root.addContent(corpusDoc.getRootElement().getChild("teiHeader", null).
+        clone());
+    }
+    else
+    {
+      System.err.println(validator.toString());
+      throw new LaudatioException("Corpus header is not valid");
+    }
 
   }
-  
-  private void mergeDocumentHeader(Element root) throws SAXException, JDOMException, IOException
+
+  private void mergeDocumentHeader(Element root) throws SAXException,
+    JDOMException, IOException, LaudatioException
   {
     // append document headers
-    
+
     File documentHeaderDir = new File(inputDir, "DocumentHeader");
     Validate.isTrue(documentHeaderDir.isDirectory());
-    File[] documentHeaderFiles = documentHeaderDir.listFiles(new FilenameFilter()
+    File[] documentHeaderFiles = documentHeaderDir.listFiles(
+      new FilenameFilter()
     {
+      @Override
       public boolean accept(File dir, String name)
       {
         return name.endsWith(".xml");
@@ -143,30 +154,42 @@ public class MergeTEI
     });
     Validate.isTrue(documentHeaderFiles.length > 0);
     SAXBuilder sax = new SAXBuilder();
+    TEIValidator validator = new TEIDocumentValidator();
     
-    for(File f : documentHeaderFiles)
+    for (File f : documentHeaderFiles)
     {
-      Document documentDoc = sax.build(f);
+      
+      if (validator.validate(f))
+      {
+        Document documentDoc = sax.build(f);
 
-      validator.validateDocument(documentDoc);
+        // remove the pending text element
+        documentDoc.getRootElement().removeChild("text", null);
 
-      // remove the pending text element
-      documentDoc.getRootElement().removeChild("text", null);
-
-      // append to our new root
-      root.addContent(documentDoc.getRootElement().getChild("teiHeader", null).
-        clone());
+        // append to our new root
+        root.addContent(
+          documentDoc.getRootElement().getChild("teiHeader", null).
+          clone());
+      }
+      else
+      {
+        System.err.println(validator.toString());
+        throw new LaudatioException("A document header is not valid");
+      }
     }
   }
-  
-  private void mergePreparationHeader(Element root) throws SAXException, JDOMException, IOException
+
+  private void mergePreparationHeader(Element root) throws SAXException,
+    JDOMException, IOException, LaudatioException
   {
     // append preparation headers
-    
+
     File preparationHeaderDir = new File(inputDir, "PreparationHeader");
     Validate.isTrue(preparationHeaderDir.isDirectory());
-    File[] preparationHeaderFiles = preparationHeaderDir.listFiles(new FilenameFilter()
+    File[] preparationHeaderFiles = preparationHeaderDir.listFiles(
+      new FilenameFilter()
     {
+      @Override
       public boolean accept(File dir, String name)
       {
         return name.endsWith(".xml");
@@ -174,19 +197,27 @@ public class MergeTEI
     });
     Validate.isTrue(preparationHeaderFiles.length > 0);
     SAXBuilder sax = new SAXBuilder();
-    
-    for(File f : preparationHeaderFiles)
+    TEIValidator validator = new TEIPreparationValidator();
+
+    for (File f : preparationHeaderFiles)
     {
-      Document preparation = sax.build(f);
+      
+      if(validator.validate(f))
+      {
+        Document preparation = sax.build(f);
 
-      validator.validatePreparation(preparation);
+        // remove the pending text element
+        preparation.getRootElement().removeChild("text", null);
 
-      // remove the pending text element
-      preparation.getRootElement().removeChild("text", null);
-
-      // append to our new root
-      root.addContent(preparation.getRootElement().getChild("teiHeader", null).
-        clone());
+        // append to our new root
+        root.addContent(preparation.getRootElement().getChild("teiHeader", null).
+          clone());
+      }
+      else
+      {
+        System.err.println(validator.toString());
+        throw new LaudatioException("A preparation header ist not valid.");
+      }
     }
   }
 }

@@ -25,9 +25,4 @@ public class LaudatioException extends Exception
   {
     super(message);
   }
-  
-  public LaudatioException(String message, Throwable cause)
-  {
-    super(message, cause);
-  }
 }
