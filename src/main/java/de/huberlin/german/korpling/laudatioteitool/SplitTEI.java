@@ -19,8 +19,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ResourceBundle;
 import java.util.UUID;
 import org.jdom2.Document;
@@ -150,7 +151,7 @@ public class SplitTEI
       // save the file with the title as file name
       File outputFile = new File(corpusDir, title + ".xml");
       XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
-      xmlOut.output(corpusDoc, new FileWriter(outputFile));
+      xmlOut.output(corpusDoc, new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
       log.info(messages.getString("WRITTEN CORPUS HEADER"), outputFile.getPath());
       
       
@@ -215,7 +216,7 @@ public class SplitTEI
       
       File outputFile = new File(documentDir, outName + ".xml");
       XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
-      xmlOut.output(newDoc, new FileWriter(outputFile));
+      xmlOut.output(newDoc, new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
       log.info(messages.getString("WRITTEN DOCUMENT HEADER"), outputFile.getPath());
       
       
@@ -283,7 +284,7 @@ public class SplitTEI
       
       File outputFile = new File(documentDir, outName + ".xml");
       XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
-      xmlOut.output(newDoc, new FileWriter(outputFile));
+      xmlOut.output(newDoc, new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
       log.info(messages.getString("WRITTEN PREPARATION HEADER"), outputFile.getPath());
       
       validator.validate(outputFile);

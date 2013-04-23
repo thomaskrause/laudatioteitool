@@ -17,9 +17,10 @@ package de.huberlin.german.korpling.laudatioteitool;
 
 import com.google.common.base.Preconditions;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ResourceBundle;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -82,7 +83,7 @@ public class MergeTEI
 
       // output the new XML
       XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
-      xmlOut.output(mergedDoc, new FileWriter(outputFile));
+      xmlOut.output(mergedDoc, new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
       log.info(messages.getString("WRITTEN MERGED TEI"), outputFile.getPath());
     }
     catch (SAXException ex)
