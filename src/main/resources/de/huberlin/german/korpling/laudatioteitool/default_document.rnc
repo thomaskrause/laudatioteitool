@@ -5,12 +5,13 @@ namespace s = "http://www.ascc.net/xml/schematron"
 namespace sch = "http://purl.oclc.org/dsdl/schematron"
 namespace xlink = "http://www.w3.org/1999/xlink"
 
-# Schema generated from ODD source 2013-03-28T10:46:54Z. 
-# Edition: 2.3.0. Last updated on 17th January 2013.
-# Edition Location: http://www.tei-c.org/Vault/P5/2.3.0/
+# Schema generated from ODD source 2013-07-10T04:56:57Z. 
+# Edition: 2.4.0. Last updated on
+#	5th July 2013.
+# Edition Location: http://www.tei-c.org/Vault/P5/2.4.0/
 #
 
-# This template file is freely available and is licensed under a Creative Commons Attribution 3.0 Unported License.
+# The Creative Commons Attribution 3.0 Unported (CC BY 3.0) Licence applies to this document.
 macro.paraContent =
   (text | model.gLike | model.phrase | model.inter | model.global)*
 macro.phraseSeq = (text | model.gLike | model.phrase | model.global)*
@@ -22,6 +23,7 @@ macro.specialPara =
    | model.inter
    | model.divPart
    | model.global)*
+macro.xtext = (text | model.gLike)*
 data.certainty = "high" | "medium" | "low" | "unknown"
 data.probability = xsd:double { minInclusive = "0" maxInclusive = "1" }
 data.numeric =
@@ -40,13 +42,14 @@ data.temporal.w3c =
   | xsd:dateTime
 data.truthValue = xsd:boolean
 data.xTruthValue = xsd:boolean | "unknown" | "inapplicable"
-data.language = xsd:language
+data.language = xsd:language | ""
 data.namespace = xsd:anyURI
 data.pointer = xsd:anyURI
 data.version = xsd:token { pattern = "[\d]+(\.[\d]+){0,2}" }
 data.word = xsd:token { pattern = "(\p{L}|\p{N}|\p{P}|\p{S})+" }
 data.text = xsd:string
 data.name = xsd:Name
+data.xmlName = xsd:NCName
 data.enumerated = data.name
 data.temporal.iso =
   xsd:date
@@ -216,6 +219,19 @@ att.datable.attribute.period =
   
   ## supplies a pointer to some location defining a named period of time within which the datable item is understood to have occurred.
   attribute period { data.pointer }?
+att.declarable.attributes = att.declarable.attribute.default
+att.declarable.attribute.default =
+  
+  ## indicates whether or not this element is selected by default when its parent is selected.
+  [ a:defaultValue = "false" ]
+  attribute default {
+    
+    ## This element is selected if its parent is selected
+    "true"
+    | 
+      ## This element can only be selected explicitly, unless it is the only one of its kind, in which case it is selected if its parent is selected.
+      "false"
+  }?
 att.declaring.attributes = att.declaring.attribute.decls
 att.declaring.attribute.decls =
   
@@ -226,7 +242,7 @@ att.declaring.attribute.decls =
 att.fragmentable.attributes = att.fragmentable.attribute.part
 att.fragmentable.attribute.part =
   
-  ## specifies whether or not its parent element is fragmented in some way, typically by some other overlapping structure : for example a speech which is divided between two or more verse stanzas, a paragraph which is split across a page division, a verse line which is divided between two speakers.
+  ## specifies whether or not its parent element is fragmented in some way, typically by some other overlapping structure: for example a speech which is divided between two or more verse stanzas, a paragraph which is split across a page division, a verse line which is divided between two speakers.
   [ a:defaultValue = "N" ]
   attribute part {
     
@@ -380,6 +396,27 @@ att.typed.attribute.subtype =
   
   ## provides a sub-categorization of the element, if needed
   attribute subtype { data.enumerated }?
+sch:pattern [
+  id = "att.typed-constraint-subtypeTyped"
+  "\x{a}" ~
+  "      "
+  sch:rule [
+    context = "*[@subtype]"
+    "\x{a}" ~
+    "	        "
+    sch:assert [
+      test = "@type"
+      "The "
+      sch:name [ ]
+      " element should not be categorized in detail with @subtype\x{a}" ~
+      " unless also categorized in general with @type"
+    ]
+    "\x{a}" ~
+    "      "
+  ]
+  "\x{a}" ~
+  "   "
+]
 att.pointing.attributes =
   att.pointing.attribute.targetLang,
   att.pointing.attribute.target,
@@ -445,6 +482,8 @@ model.dateLike_sequence = date
 model.dateLike_sequenceOptional = date?
 model.dateLike_sequenceOptionalRepeatable = date*
 model.dateLike_sequenceRepeatable = date+
+model.pPart.msdesc =
+  locus | locusGrp | objectType | origDate | origPlace
 model.ptrLike = ref
 model.gLike = notAllowed
 model.oddDecl = elementSpec
@@ -454,6 +493,24 @@ model.oddDecl_sequenceOptional = elementSpec?
 model.oddDecl_sequenceOptionalRepeatable = elementSpec*
 model.oddDecl_sequenceRepeatable = elementSpec+
 model.oddRef = notAllowed
+model.biblLike = msDesc
+model.biblLike_alternation = msDesc
+model.biblLike_sequence = msDesc
+model.biblLike_sequenceOptional = msDesc?
+model.biblLike_sequenceOptionalRepeatable = msDesc*
+model.biblLike_sequenceRepeatable = msDesc+
+model.headLike = notAllowed
+model.headLike_alternation = notAllowed
+model.headLike_sequence = empty
+model.headLike_sequenceOptional = empty
+model.headLike_sequenceOptionalRepeatable = empty
+model.headLike_sequenceRepeatable = notAllowed
+model.listLike = notAllowed
+model.listLike_alternation = notAllowed
+model.listLike_sequence = empty
+model.listLike_sequenceOptional = empty
+model.listLike_sequenceOptionalRepeatable = empty
+model.listLike_sequenceRepeatable = notAllowed
 model.pLike = p
 model.pLike_alternation = p
 model.pLike_sequence = p
@@ -461,30 +518,59 @@ model.pLike_sequenceOptional = p?
 model.pLike_sequenceOptionalRepeatable = p*
 model.pLike_sequenceRepeatable = p+
 model.divPart = model.pLike | schemaSpec
+model.placeNamePart = notAllowed
+model.placeNamePart_alternation = notAllowed
+model.placeNamePart_sequence = empty
+model.placeNamePart_sequenceOptional = empty
+model.placeNamePart_sequenceOptionalRepeatable = empty
+model.placeNamePart_sequenceRepeatable = notAllowed
+model.placeStateLike = model.placeNamePart
+model.placeStateLike_alternation = model.placeNamePart_alternation
+model.placeStateLike_sequence = model.placeNamePart_sequence
+model.placeStateLike_sequenceOptional =
+  model.placeNamePart_sequenceOptional?
+model.placeStateLike_sequenceOptionalRepeatable =
+  model.placeNamePart_sequenceOptionalRepeatable*
+model.placeStateLike_sequenceRepeatable =
+  model.placeNamePart_sequenceRepeatable+
 model.publicationStmtPart = date | publisher | biblScope | pubPlace
 model.descLike = notAllowed
 model.glossLike = notAllowed
 model.respLike = author | editor
-model.nameLike = model.nameLike.agent | model.persNamePart
+model.nameLike =
+  model.nameLike.agent | model.placeStateLike | model.persNamePart
 model.nameLike_alternation =
-  model.nameLike.agent_alternation | model.persNamePart_alternation
+  model.nameLike.agent_alternation
+  | model.placeStateLike_alternation
+  | model.persNamePart_alternation
 model.nameLike_sequence =
-  model.nameLike.agent_sequence, model.persNamePart_sequence
+  model.nameLike.agent_sequence,
+  model.placeStateLike_sequence,
+  model.persNamePart_sequence
 model.nameLike_sequenceOptional =
   model.nameLike.agent_sequenceOptional?,
+  model.placeStateLike_sequenceOptional?,
   model.persNamePart_sequenceOptional?
 model.nameLike_sequenceOptionalRepeatable =
   model.nameLike.agent_sequenceOptionalRepeatable*,
+  model.placeStateLike_sequenceOptionalRepeatable*,
   model.persNamePart_sequenceOptionalRepeatable*
 model.nameLike_sequenceRepeatable =
   model.nameLike.agent_sequenceRepeatable+,
+  model.placeStateLike_sequenceRepeatable+,
   model.persNamePart_sequenceRepeatable+
 model.global = notAllowed
 model.pPart.data = model.dateLike | model.nameLike
-model.inter = model.oddDecl
-model.phrase = model.highlighted | model.ptrLike | model.pPart.data
-model.limitedPhrase = model.emphLike | model.ptrLike | model.pPart.data
+model.inter = model.oddDecl | model.biblLike | model.listLike
+model.phrase =
+  model.highlighted
+  | model.pPart.msdesc
+  | model.ptrLike
+  | model.pPart.data
+model.limitedPhrase =
+  model.emphLike | model.pPart.msdesc | model.ptrLike | model.pPart.data
 model.teiHeaderPart = encodingDesc | profileDesc
+model.sourceDescPart = recordHist
 model.encodingDescPart = schemaSpec
 model.profileDescPart = langUsage
 model.resourceLike = notAllowed
@@ -523,7 +609,7 @@ p =
   }
 date =
   
-  ## contains a date in any format. [3.5.4.  2.2.4.  2.5.  3.11.2.3.  15.2.3.  13.3.6. ]
+  ## contains a date in any format. [3.5.4.  2.2.4.  2.5.  3.11.2.4.  15.2.3.  13.3.6. ]
   element date {
     (text | model.gLike | model.phrase | model.global)*,
     att.typed.attribute.type,
@@ -576,13 +662,6 @@ author =
     ## (number) gives a number (or other label) for an element, which is not necessarily unique within the document.
     ## Sample values include: 
     attribute n { data.text }?,
-    
-    ## may be used to specify further information about the entity referenced by this name, for example the occupation of a person, or the status of a place. 
-    attribute role {
-      
-      ##
-      "Annotator"
-    }?,
     empty
   }
 editor =
@@ -616,36 +695,39 @@ title =
   }
 publisher =
   
-  ## provides the name of the organization responsible for the publication or distribution of a bibliographic item. [3.11.2.3.  2.2.4. ]
+  ## provides the name of the organization responsible for the publication or distribution of a bibliographic item. [3.11.2.4.  2.2.4. ]
   element publisher { macro.phraseSeq, att.global.attributes, empty }
 biblScope =
   
-  ## (scope of bibliographic reference) defines the scope of a bibliographic reference, for example as a list of page numbers, or a named subdivision of a larger work. [3.11.2.3. ]
+  ## (scope of bibliographic reference) defines the scope of a bibliographic reference, for example as a list of page numbers, or a named subdivision of a larger work. [3.11.2.4. ]
   element biblScope {
     macro.phraseSeq,
     att.global.attributes,
     
     ## identifies the unit of information conveyed by the element, e.g. columns, pages, volume.
-    ## Suggested values include: 1] vol(volume) ; 2] issue; 3] pp(pages) ; 4] ll (lines) ; 5] chap(chapter) ; 6] part
+    ## Suggested values include: 1] volume; 2] issue; 3] page; 4] line; 5] chapter; 6] part; 7] column
     attribute unit {
       
-      ## (volume) the element contains a volume number.
-      "vol"
+      ## the element contains a volume number.
+      "volume"
       | 
         ## the element contains an issue number, or volume and issue numbers.
         "issue"
       | 
-        ## (pages) the element contains a page number or page range.
-        "pp"
+        ## the element contains a page number or page range.
+        "page"
       | 
-        ##  (lines) the element contains a line number or line range.
-        "ll"
+        ## the element contains a line number or line range.
+        "line"
       | 
-        ## (chapter) the element contains a chapter indication (number and/or title)
-        "chap"
+        ## the element contains a chapter indication (number and/or title)
+        "chapter"
       | 
         ## the element identifies a part of a book or collection.
         "part"
+      | 
+        ## the element identifies a column.
+        "column"
       | xsd:Name
     }?,
     
@@ -682,13 +764,13 @@ biblScope =
   }
 pubPlace =
   
-  ## (publication place) contains the name of the place where a bibliographic item was published. [3.11.2.3. ]
+  ## (publication place) contains the name of the place where a bibliographic item was published. [3.11.2.4. ]
   element pubPlace {
     macro.phraseSeq, att.global.attributes, att.naming.attributes, empty
   }
 teiHeader =
   
-  ## (TEI Header) supplies the descriptive and declarative information making up an electronic title page prefixed to every TEI-conformant text. [2.1.1.  15.1. ]
+  ## (TEI header) supplies the descriptive and declarative information making up an electronic title page prefixed to every TEI-conformant text. [2.1.1.  15.1. ]
   element teiHeader {
     (fileDesc, model.teiHeaderPart*, revisionDesc?),
     att.global.attribute.n,
@@ -714,7 +796,7 @@ fileDesc =
   
   ## (file description) contains a full bibliographic description of an electronic file. [2.2.  2.1.1. ]
   element fileDesc {
-    (titleStmt, extent?, publicationStmt, seriesStmt?),
+    ((titleStmt, extent?, publicationStmt, seriesStmt?), sourceDesc+),
     att.global.attribute.xmlid,
     empty
   }
@@ -724,7 +806,7 @@ titleStmt =
   element titleStmt { title+, model.respLike* }
 extent =
   
-  ## describes the approximate size of a text stored on some carrier medium or of some other object, digital or non-digital, specified in any convenient units. [2.2.3.  2.2.  3.11.2.3.  10.7.1. ]
+  ## describes the approximate size of a text stored on some carrier medium or of some other object, digital or non-digital, specified in any convenient units. [2.2.3.  2.2.  3.11.2.4.  10.7.1. ]
   element extent {
     macro.phraseSeq,
     att.typed.attribute.subtype,
@@ -759,6 +841,16 @@ seriesStmt =
     att.global.attributes,
     empty
   }
+sourceDesc =
+  
+  ## (source description) describes the source from which an electronic text was derived or generated, typically a bibliographic description in the case of a digitized text, or a phrase such as "born digital" for a text which has no previous existence. [2.2.7. ]
+  element sourceDesc {
+    (model.pLike+
+     | (model.biblLike | model.sourceDescPart | model.listLike)+),
+    att.global.attributes,
+    att.declarable.attributes,
+    empty
+  }
 encodingDesc =
   
   ## (encoding description) documents the relationship between an electronic text and the source or sources from which it was derived. [2.3.  2.1.1. ]
@@ -789,6 +881,19 @@ language =
   element language {
     macro.phraseSeq.limited,
     att.global.attribute.n,
+    
+    ## contains an expression in some formal style definition language which defines the rendering or presentation used for this element in the source text 
+    attribute style {
+      
+      ##
+      "Language"
+      | 
+        ##
+        "LanguageType"
+      | 
+        ##
+        "LanguageArea"
+    },
     
     ## (identifier) Supplies a language code constructed as defined in BCP 47 which is used to identify the language documented by this element, and which is referenced by the global xml:lang attribute.
     attribute ident { data.language },
@@ -871,46 +976,132 @@ att.identified.attribute.ident =
   
   ## supplies the identifier by which this element may be referenced.
   attribute ident { data.name }
+sch:pattern [
+  id = "att.identified-constraint-spec-in-module"
+  "\x{a}" ~
+  "      "
+  sch:rule [
+    context =
+      "tei:elementSpec[@module]|tei:classSpec[@module]|tei:macroSpec[@module]"
+    "\x{a}" ~
+    "         "
+    sch:assert [
+      test =
+        "         (not(ancestor::tei:schemaSpec | ancestor::tei:TEI | ancestor::tei:teiCorpus)) or         (not(@module) or          (not(//tei:moduleSpec) and not(//tei:moduleRef))  or         (//tei:moduleSpec[@ident = current()/@module]) or          (//tei:moduleRef[@key = current()/@module]))         "
+      "\x{a}" ~
+      "        Specification "
+      sch:value-of [ select = "@ident" ]
+      ': the value of the module attribute ("'
+      sch:value-of [ select = "@module" ]
+      '") \x{a}' ~
+      "should correspond to an existing module, via a moduleSpec or\x{a}" ~
+      "      moduleRef"
+    ]
+    "\x{a}" ~
+    "      "
+  ]
+  "\x{a}" ~
+  "   "
+]
+att.deprecated.attributes = att.deprecated.attribute.validUntil
+att.deprecated.attribute.validUntil =
+  
+  ## provides a date before which the construct being defined will not be removed.
+  attribute validUntil { xsd:date }?
+sch:pattern [
+  id = "validUntil-constraint-deprecated"
+  "\x{a}" ~
+  "      "
+  sch:rule [
+    context = "tei:*[@validUntil]"
+    "\x{a}" ~
+    "	        "
+    sch:assert [
+      test = "@validUntil cast as xs:date ge current-date()"
+      "\x{a}" ~
+      "            "
+      sch:value-of [
+        select =
+          "if (@ident) then concat('The ',@ident) else concat('This ',local-name(.),' of ',ancestor::tei:*[@ident][1]/@ident)"
+      ]
+      " construct is outdated (as of "
+      sch:value-of [ select = "@validUntil" ]
+      "); ODD processors may ignore it, and it should probably be removed"
+    ]
+    "\x{a}" ~
+    "	        "
+    sch:report [
+      test = "@validUntil cast as xs:date eq current-date()"
+      "\x{a}" ~
+      "            "
+      sch:value-of [
+        select =
+          "if (@ident) then concat('The ',@ident) else concat('This ',local-name(.),' of ',ancestor::tei:*[@ident][1]/@ident)"
+      ]
+      " construct will be outdated as of tomorrow; ODD processors may then ignore it, and thus it should probably be removed soon"
+    ]
+    "\x{a}" ~
+    "	     "
+  ]
+  "\x{a}" ~
+  "   "
+]
+sch:pattern [
+  id = "validUntil-constraint-deprecated"
+  "\x{a}" ~
+  "      "
+  sch:rule [
+    context = "tei:*[@validUntil]"
+    "\x{a}" ~
+    "            "
+    sch:assert [
+      test =
+        "(@validUntil cast as xs:date - current-date()) lt (30*xs:dayTimeDuration('P1D'))"
+      "\x{a}" ~
+      "            "
+      sch:value-of [
+        select =
+          "if (@ident) then concat('The ',@ident) else concat('This ',local-name(.),' of ',ancestor::tei:*[@ident][1]/@ident)"
+      ]
+      " construct is outdated (as of "
+      sch:value-of [ select = "@validUntil" ]
+      "); ODD processors may ignore it, and it should probably be removed"
+    ]
+    "\x{a}" ~
+    "            "
+    sch:report [
+      test = "@validUntil cast as xs:date eq current-date()"
+      "\x{a}" ~
+      "            "
+      sch:value-of [
+        select =
+          "if (@ident) then concat('The ',@ident) else concat('This ',local-name(.),' of ',ancestor::tei:*[@ident][1]/@ident)"
+      ]
+      " construct will be outdated as of tomorrow; ODD processors may then ignore it, and thus it should probably be removed soon"
+    ]
+    "\x{a}" ~
+    "          "
+  ]
+  "\x{a}" ~
+  "   "
+]
 schemaSpec =
   
-  ## (schema specification) generates a TEI-conformant schema and documentation for it.
+  ## (schema specification) generates a TEI-conformant schema and documentation for it. [2.3.  22.2.  23.5.1. ]
   element schemaSpec {
     ((model.glossLike | model.descLike)*,
      (model.oddRef | model.oddDecl)*),
     att.identified.attribute.ident,
+    att.deprecated.attribute.validUntil,
     empty
   }
 elementSpec =
   
   ## (element specification) documents the structure, content, and purpose of a single element type. [22.4.4.  22. ]
   element elementSpec {
-    ((model.glossLike | model.descLike)*, valList?)
-    >> sch:pattern [
-         id = "elementSpec-constraint-elementspec-in-module"
-         "\x{a}" ~
-         "            "
-         sch:rule [
-           context = "tei:elementSpec"
-           "\x{a}" ~
-           "               "
-           sch:assert [
-             test =
-               "not( @module )                or                //tei:moduleSpec[ @ident = current()/@module ]                or                //tei:moduleRef[ @key = current()/@module ]"
-             "\x{a}" ~
-             "On element "
-             sch:name [ ]
-             ' the value of the module attribute ("'
-             sch:value-of [ select = "@module" ]
-             '")\x{a}' ~
-             "should correspond to an existing module, via a moduleSpec or moduleRef"
-           ]
-           "\x{a}" ~
-           "            "
-         ]
-         "\x{a}" ~
-         "         "
-       ],
+    ((model.glossLike | model.descLike)*, valList?),
     att.identified.attribute.ident,
+    att.deprecated.attribute.validUntil,
     empty
   }
 valItem =
@@ -918,18 +1109,21 @@ valItem =
   ## documents a single value in a predefined list of values. [22.4.5. ]
   element valItem {
     (model.descLike | model.glossLike)*,
+    att.deprecated.attribute.validUntil,
     
     ##
     attribute corresp { text },
     
     ## specifies the value concerned.
-    attribute ident { text },
+    attribute ident { data.text },
     empty
   }
 valList =
   
   ## (value list) contains one or more valItem elements defining possible values. [22.4.5. ]
-  element valList { valItem* }
+  element valList {
+    valItem*, att.deprecated.attribute.validUntil, empty
+  }
 att.datable.custom.attributes =
   att.datable.custom.attribute.when-custom,
   att.datable.custom.attribute.notBefore-custom,
@@ -1032,4 +1226,109 @@ forename =
   
   ## contains a forename, given or baptismal name. [13.2.1. ]
   element forename { macro.phraseSeq }
+msDesc =
+  
+  ## (manuscript description) contains a description of a single identifiable manuscript or other text-bearing object. [10.1. ]
+  element msDesc {
+    msIdentifier, model.headLike*, (model.pLike+ | history?)
+  }
+locus =
+  
+  ## defines a location within a manuscript or manuscript part, usually as a (possibly discontinuous) sequence of folio references.  [10.3.5. ]
+  element locus { macro.xtext }
+locusGrp =
+  
+  ## groups a number of locations which together form a distinct but discontinuous item within a manuscript or manuscript part, according to a specific foliation.  [10.3.5. ]
+  element locusGrp {
+    locus+,
+    att.global.attributes,
+    
+    ## identifies the foliation scheme in terms of which all the locations contained by the group are specified.
+    attribute scheme { data.pointer }?,
+    empty
+  }
+objectType =
+  
+  ## contains a word or phrase describing the type of object being referred to.  [10.3.2. ]
+  element objectType { macro.phraseSeq }
+origDate =
+  
+  ## (origin date) contains any form of date, used to identify the date of origin for a manuscript or manuscript part.  [10.3.1. ]
+  element origDate {
+    (text | model.gLike | model.phrase | model.global)*,
+    att.datable.custom.attribute.notBefore-custom,
+    att.datable.custom.attribute.notAfter-custom,
+    att.dimensions.attribute.precision,
+    empty
+  }
+origPlace =
+  
+  ## (origin place) contains any form of place name, used to identify the place of origin for a manuscript or manuscript part.  [10.3.1. ]
+  element origPlace { macro.phraseSeq }
+msIdentifier =
+  
+  ## (manuscript identifier) contains the information required to identify the manuscript being described.  [10.4. ]
+  element msIdentifier {
+    ((model.placeNamePart_sequenceOptional, repository?, collection*),
+     (msName | altIdentifier)*)
+    >> sch:pattern [
+         id = "msIdentifier-constraint-msId_minimal"
+         "\x{a}" ~
+         "            "
+         sch:rule [
+           context = "tei:msIdentifier"
+           "\x{a}" ~
+           "               "
+           sch:report [
+             test =
+               "not(parent::tei:msPart) and       (local-name(*[1])='idno' or       local-name(*[1])='altIdentifier' or       normalize-space(.)='')"
+             "An msIdentifier must contain either a repository or location of some type, or a manuscript name"
+           ]
+           "\x{a}" ~
+           "            "
+         ]
+         "\x{a}" ~
+         "         "
+       ]
+  }
+repository =
+  
+  ## contains the name of a repository within which manuscripts are stored, possibly forming part of an institution. [10.4. ]
+  element repository { macro.xtext }
+collection =
+  
+  ## contains the name of a collection of manuscripts, not necessarily located within a single repository.  [10.4. ]
+  element collection { macro.xtext }
+altIdentifier =
+  
+  ## (alternative identifier) contains an alternative or former structured identifier used for a manuscript, such as a former catalogue number. [10.4. ]
+  element altIdentifier {
+    model.placeNamePart_sequenceOptional, repository?, collection?
+  }
+msName =
+  
+  ## (alternative name) contains any form of unstructured alternative name used for a manuscript, such as an ocellus nominum, or nickname. [10.4. ]
+  element msName { macro.xtext }
+history =
+  
+  ## groups elements describing the full history of a manuscript or manuscript part. [10.8. ]
+  element history { model.pLike+ | origin? }
+origin =
+  
+  ## contains any descriptive or other information concerning the origin of a manuscript or manuscript part.  [10.8. ]
+  element origin { macro.specialPara }
+recordHist =
+  
+  ## (recorded history) provides information about the source and revision status of the parent manuscript description itself.  [10.9.1. ]
+  element recordHist { model.pLike+ | (source, change*) }
+source =
+  
+  ## describes the original source for the information contained with a manuscript description.  [10.9.1.1. ]
+  element source {
+    macro.specialPara,
+    
+    ##
+    attribute facs { text },
+    empty
+  }
 start = TEI

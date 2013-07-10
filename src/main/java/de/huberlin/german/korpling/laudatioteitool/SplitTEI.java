@@ -28,6 +28,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
+import org.jdom2.ProcessingInstruction;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
@@ -45,6 +46,7 @@ public class SplitTEI
   private static final ResourceBundle messages =
     ResourceBundle.getBundle("de/huberlin/german/korpling/laudatioteitool/Messages");
   private final static Logger log = LoggerFactory.getLogger(SplitTEI.class);
+  
   private File inputFile;
   private File outputDirectory;
   private String corpusSchemeURL, documentSchemeURL, preparationSchemeURL;
@@ -131,6 +133,12 @@ public class SplitTEI
       newRootForCorpus.addContent(corpusHeader.clone());
       Document corpusDoc = new Document(newRootForCorpus);
 
+      if(corpusSchemeURL != null)
+      {
+        corpusDoc.addContent(0, new ProcessingInstruction("xml-model", 
+          "href=\"" + corpusSchemeURL + "\""));
+      }
+      
       // we need to append an empty "text" element after the header
       Element text = new Element("text", teiNS);
       text.setText("");
@@ -194,6 +202,12 @@ public class SplitTEI
       Element tei = new Element("TEI", teiNS);
       tei.addContent(docHeader.clone());
       Document newDoc = new Document(tei);
+      
+      if(documentSchemeURL != null)
+      {
+        newDoc.addContent(0, new ProcessingInstruction("xml-model", 
+          "href=\"" + documentSchemeURL + "\""));
+      }
       
       // we need to append an empty "text" element after the header
       Element text = new Element("text", teiNS);
@@ -262,6 +276,12 @@ public class SplitTEI
       Element tei = new Element("TEI", teiNS);
       tei.addContent(preparationHeader.clone());
       Document newDoc = new Document(tei);
+      
+      if(preparationSchemeURL != null)
+      {
+        newDoc.addContent(0, new ProcessingInstruction("xml-model", 
+          "href=\"" + preparationSchemeURL + "\""));
+      }
       
       // we need to append an empty "text" element after the header
       Element text = new Element("text", teiNS);

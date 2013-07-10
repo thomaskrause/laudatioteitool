@@ -20,6 +20,9 @@ public class TEICorpusValidator extends TEIValidator
 {
   private final static Logger log = LoggerFactory.getLogger(TEICorpusValidator.class);
 
+  public static final String DEFAULT_SCHEME_URL 
+    = "http://korpling.german.hu-berlin.de/schemata/laudatio/teiODD_LAUDATIOCorpus_S0.2.rnc";
+  
   private Validator validator = null;
   
   public TEICorpusValidator()
@@ -28,7 +31,7 @@ public class TEICorpusValidator extends TEIValidator
     StreamSource source =
       new StreamSource(
       TEICorpusValidator.class.getResourceAsStream(
-      "teiODD_LAUDATIOCorpus.rnc"));
+      "default_corpus.rnc"));
     try
     {
       this.validator = schemaFactory.newSchema(source).newValidator();

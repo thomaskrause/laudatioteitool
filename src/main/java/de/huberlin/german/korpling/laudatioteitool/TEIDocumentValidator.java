@@ -21,6 +21,9 @@ public class TEIDocumentValidator extends TEIValidator
   private final static Logger log = LoggerFactory.getLogger(
     TEIDocumentValidator.class);
   
+  public static final String DEFAULT_SCHEME_URL 
+    = "http://korpling.german.hu-berlin.de/schemata/laudatio/teiODD_LAUDATIODocument_S0.2.rnc";
+  
   private Validator validator = null;
 
   public TEIDocumentValidator()
@@ -28,7 +31,7 @@ public class TEIDocumentValidator extends TEIValidator
     StreamSource source =
       new StreamSource(
       TEIDocumentValidator.class.getResourceAsStream(
-      "teiODD_LAUDATIODocument.rnc"));
+      "default_document.rnc"));
     try
     {
       this.validator = schemaFactory.newSchema(source).newValidator();

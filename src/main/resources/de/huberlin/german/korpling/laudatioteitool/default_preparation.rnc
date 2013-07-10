@@ -4,12 +4,13 @@ namespace rng = "http://relaxng.org/ns/structure/1.0"
 namespace sch = "http://purl.oclc.org/dsdl/schematron"
 namespace xlink = "http://www.w3.org/1999/xlink"
 
-# Schema generated from ODD source 2013-03-28T09:28:59Z. 
-# Edition: 2.3.0. Last updated on 17th January 2013.
-# Edition Location: http://www.tei-c.org/Vault/P5/2.3.0/
+# Schema generated from ODD source 2013-07-10T05:49:38Z. 
+# Edition: 2.4.0. Last updated on
+#	5th July 2013.
+# Edition Location: http://www.tei-c.org/Vault/P5/2.4.0/
 #
 
-# This template file is freely available and is licensed under a Creative Commons Attribution 3.0 Unported License.
+# The Creative Commons Attribution 3.0 Unported (CC BY 3.0) Licence applies to this document.
 macro.paraContent =
   (text | model.gLike | model.phrase | model.inter | model.global)*
 macro.limitedContent = (text | model.limitedPhrase | model.inter)*
@@ -39,9 +40,11 @@ data.temporal.w3c =
   | xsd:time
   | xsd:dateTime
 data.xTruthValue = xsd:boolean | "unknown" | "inapplicable"
-data.language = xsd:language
+data.language = xsd:language | ""
 data.pointer = xsd:anyURI
 data.version = xsd:token { pattern = "[\d]+(\.[\d]+){0,2}" }
+data.versionNumber =
+  xsd:token { pattern = "[\d]+[a-z]*[\d]*(\.[\d]+[a-z]*[\d]*){0,3}" }
 data.word = xsd:token { pattern = "(\p{L}|\p{N}|\p{P}|\p{S})+" }
 data.text = xsd:string
 data.name = xsd:Name
@@ -230,7 +233,7 @@ att.declaring.attribute.decls =
 att.fragmentable.attributes = att.fragmentable.attribute.part
 att.fragmentable.attribute.part =
   
-  ## specifies whether or not its parent element is fragmented in some way, typically by some other overlapping structure : for example a speech which is divided between two or more verse stanzas, a paragraph which is split across a page division, a verse line which is divided between two speakers.
+  ## specifies whether or not its parent element is fragmented in some way, typically by some other overlapping structure: for example a speech which is divided between two or more verse stanzas, a paragraph which is split across a page division, a verse line which is divided between two speakers.
   [ a:defaultValue = "N" ]
   attribute part {
     
@@ -384,6 +387,27 @@ att.typed.attribute.subtype =
   
   ## provides a sub-categorization of the element, if needed
   attribute subtype { data.enumerated }?
+sch:pattern [
+  id = "att.typed-constraint-subtypeTyped"
+  "\x{a}" ~
+  "      "
+  sch:rule [
+    context = "*[@subtype]"
+    "\x{a}" ~
+    "	        "
+    sch:assert [
+      test = "@type"
+      "The "
+      sch:name [ ]
+      " element should not be categorized in detail with @subtype\x{a}" ~
+      " unless also categorized in general with @type"
+    ]
+    "\x{a}" ~
+    "      "
+  ]
+  "\x{a}" ~
+  "   "
+]
 att.pointing.attributes =
   att.pointing.attribute.targetLang,
   att.pointing.attribute.target,
@@ -521,7 +545,7 @@ model.teiHeaderPart = encodingDesc | profileDesc
 model.sourceDescPart = notAllowed
 model.encodingDescPart =
   projectDesc | editorialDecl | tagsDecl | appInfo
-model.editorialDeclPart = normalization | segmentation
+model.editorialDeclPart = correction | normalization | segmentation
 model.profileDescPart = langUsage
 model.resourceLike = notAllowed
 p =
@@ -536,7 +560,7 @@ p =
   }
 date =
   
-  ## contains a date in any format. [3.5.4.  2.2.4.  2.5.  3.11.2.3.  15.2.3.  13.3.6. ]
+  ## contains a date in any format. [3.5.4.  2.2.4.  2.5.  3.11.2.4.  15.2.3.  13.3.6. ]
   element date {
     (text | model.gLike | model.phrase | model.global)*,
     att.typed.attribute.type,
@@ -636,6 +660,9 @@ author =
       
       ##
       "Annotator"
+      | 
+        ##
+        "Infrastructure"
     }?,
     empty
   }
@@ -662,22 +689,21 @@ title =
   ## contains a title for any kind of work. [3.11.2.2.  2.2.1.  2.2.5. ]
   element title {
     macro.paraContent,
-    att.global.attribute.rend,
-    att.global.attribute.xmlbase,
-    att.global.attribute.xmlspace,
     
-    ##  (You must specify the exact reference to LAUDATIO metadata module schema
-    ##                   'Corpus'.) classifies the title according to some convenient typology.
+    ## classifies the title according to some convenient typology.
     attribute type {
       
-      ##  (The title only refers to the LAUDATIO metadata object 'Corpus') 
-      "Corpus"
-    }?,
+      ##
+      "AnnotationKey"
+    },
+    
+    ##
+    attribute corresp { text },
     empty
   }
 teiHeader =
   
-  ## (TEI Header) supplies the descriptive and declarative information making up an electronic title page prefixed to every TEI-conformant text. [2.1.1.  15.1. ]
+  ## (TEI header) supplies the descriptive and declarative information making up an electronic title page prefixed to every TEI-conformant text. [2.1.1.  15.1. ]
   element teiHeader {
     (fileDesc, model.teiHeaderPart*, revisionDesc?),
     att.global.attribute.n,
@@ -710,7 +736,7 @@ titleStmt =
   element titleStmt { title+, model.respLike* }
 extent =
   
-  ## describes the approximate size of a text stored on some carrier medium or of some other object, digital or non-digital, specified in any convenient units. [2.2.3.  2.2.  3.11.2.3.  10.7.1. ]
+  ## describes the approximate size of a text stored on some carrier medium or of some other object, digital or non-digital, specified in any convenient units. [2.2.3.  2.2.  3.11.2.4.  10.7.1. ]
   element extent {
     macro.phraseSeq,
     att.typed.attribute.subtype,
@@ -731,7 +757,7 @@ publicationStmt =
   ## (publication statement) groups information concerning the publication or distribution of an electronic or other text.  [2.2.4.  2.2. ]
   element publicationStmt {
     (model.pLike+ | model.publicationStmtPart+),
-    att.global.attributes,
+    att.global.attribute.rend,
     empty
   }
 authority =
@@ -742,7 +768,7 @@ authority =
   }
 idno =
   
-  ## (identifier) supplies any form of identifier used to identify some object, such as a bibliographic item, a person, a title, an organization, etc. in a standardized way. [2.2.4.  2.2.5.  3.11.2.3. ]
+  ## (identifier) supplies any form of identifier used to identify some object, such as a bibliographic item, a person, a title, an organization, etc. in a standardized way. [2.2.4.  2.2.5.  3.11.2.4. ]
   element idno {
     (text | model.gLike | idno)*,
     att.global.attributes,
@@ -808,14 +834,88 @@ editorialDecl =
     att.global.attribute.n,
     empty
   }
+correction =
+  
+  ## (correction principles) states how and under what circumstances corrections have been made in the text. [2.3.3.  15.3.2. ]
+  element correction {
+    model.pLike+,
+    att.global.attributes,
+    att.declarable.attributes,
+    
+    ##
+    attribute method {
+      
+      ##
+      "manual"
+      | 
+        ##
+        "semi-automatic"
+      | 
+        ##
+        "automatic"
+    }?,
+    
+    ## indicates the degree of correction applied to the text. 
+    [ a:defaultValue = "unknown" ]
+    attribute status {
+      
+      ## the text has been thoroughly checked and proofread. 
+      "high"
+      | 
+        ## the text has been checked at least once. 
+        "medium"
+      | 
+        ## the text has not been checked. 
+        "low"
+      | 
+        ## the correction status of the text is unknown. 
+        "unknown"
+    }?,
+    empty
+  }
 normalization =
   
   ## indicates the extent of normalization or regularization of the original source carried out in converting it to electronic form. [2.3.3.  15.3.2. ]
-  element normalization { model.pLike+, att.global.attribute.n, empty }
+  element normalization {
+    model.pLike+,
+    att.global.attribute.n,
+    
+    ## indicates the method adopted to indicate normalizations within the text. 
+    [ a:defaultValue = "silent" ]
+    attribute method {
+      
+      ##
+      "None"
+      | 
+        ##
+        "Silent"
+      | 
+        ##
+        "Annotation"
+    },
+    empty
+  }
 segmentation =
   
   ## describes the principles according to which the text has been segmented, for example into sentences, tone-units, graphemic strata, etc. [2.3.3.  15.3.2. ]
-  element segmentation { model.pLike+, att.global.attribute.n, empty }
+  element segmentation {
+    model.pLike+,
+    att.global.attribute.n,
+    
+    ## contains an expression in some formal style definition language which defines the rendering or presentation used for this element in the source text 
+    attribute style {
+      
+      ##
+      "Dependent"
+      | 
+        ##
+        "Independent"
+    }?,
+    
+    ##
+    attribute corresp { text }?,
+    empty
+  }
 tagsDecl =
   
   ## (tagging declaration) provides detailed information about the tagging applied to a document. [2.3.4.  2.3. ]
@@ -882,28 +982,59 @@ tagUsage =
   }
 appInfo =
   
-  ## (application information) records information about an application which has edited the TEI file. 
+  ## (application information) records information about an application which has edited the TEI file.  [2.3.10. ]
   element appInfo {
-    model.applicationLike+, att.global.attributes, empty
+    model.applicationLike+,
+    att.global.attribute.xmlid,
+    att.global.attribute.n,
+    att.global.attribute.xmllang,
+    att.global.attribute.rend,
+    att.global.attribute.rendition,
+    att.global.attribute.xmlbase,
+    att.global.attribute.xmlspace,
+    
+    ##
+    attribute style {
+      
+      ##
+      "Automatic"
+      | 
+        ##
+        "Semi-automatic"
+      | 
+        ##
+        "Manual"
+    },
+    empty
   }
 application =
   
-  ## provides information about an application which has acted upon the document.
+  ## provides information about an application which has acted upon the document. [2.3.10. ]
   element application {
     (model.labelLike+, (model.ptrLike* | model.pLike*)),
-    att.global.attributes,
-    att.typed.attributes,
+    att.global.attribute.xmlid,
+    att.global.attribute.n,
+    att.global.attribute.xmllang,
+    att.global.attribute.rend,
+    att.global.attribute.rendition,
+    att.global.attribute.xmlbase,
+    att.global.attribute.xmlspace,
     att.datable.attributes,
     
-    ## Supplies an identifier for the application, independent of its version number or display name.
+    ## contains an expression in some formal style definition language which defines the rendering or presentation used for this element in the source text 
+    attribute style { data.text },
+    
+    ## characterizes the element in some sense, using any convenient classification scheme or typology.
+    attribute type { data.enumerated },
+    
+    ## provides a sub-categorization of the element, if needed
+    attribute subtype { data.enumerated },
+    
+    ## supplies an identifier for the application, independent of its version number or display name.
     attribute ident { data.name },
     
-    ## Supplies a version number for the application, independent of its identifier or display name.
-    attribute version {
-      xsd:token {
-        pattern = "[\d]+[a-z]*[\d]*(\.[\d]+[a-z]*[\d]*){0,3}"
-      }
-    },
+    ## supplies a version number for the application, independent of its identifier or display name.
+    attribute version { data.versionNumber },
     empty
   }
 profileDesc =
