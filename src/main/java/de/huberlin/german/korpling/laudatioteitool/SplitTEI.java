@@ -133,7 +133,12 @@ public class SplitTEI
       newRootForCorpus.addContent(corpusHeader.clone());
       Document corpusDoc = new Document(newRootForCorpus);
 
-      if(corpusSchemeURL != null)
+      if(corpusSchemeURL == null)
+      {
+        corpusDoc.addContent(0, new ProcessingInstruction("xml-model", 
+          "href=\"" + TEICorpusValidator.DEFAULT_SCHEME_URL + "\""));
+      }
+      else
       {
         corpusDoc.addContent(0, new ProcessingInstruction("xml-model", 
           "href=\"" + corpusSchemeURL + "\""));
@@ -203,7 +208,12 @@ public class SplitTEI
       tei.addContent(docHeader.clone());
       Document newDoc = new Document(tei);
       
-      if(documentSchemeURL != null)
+      if(documentSchemeURL == null)
+      {
+        newDoc.addContent(0, new ProcessingInstruction("xml-model", 
+          "href=\"" + TEIDocumentValidator.DEFAULT_SCHEME_URL + "\""));
+      }
+      else
       {
         newDoc.addContent(0, new ProcessingInstruction("xml-model", 
           "href=\"" + documentSchemeURL + "\""));
@@ -277,7 +287,13 @@ public class SplitTEI
       tei.addContent(preparationHeader.clone());
       Document newDoc = new Document(tei);
       
-      if(preparationSchemeURL != null)
+      
+      if(preparationSchemeURL == null)
+      {
+        newDoc.addContent(0, new ProcessingInstruction("xml-model", 
+          "href=\"" + TEIPreparationValidator.DEFAULT_SCHEME_URL + "\""));
+      }
+      else
       {
         newDoc.addContent(0, new ProcessingInstruction("xml-model", 
           "href=\"" + preparationSchemeURL + "\""));
