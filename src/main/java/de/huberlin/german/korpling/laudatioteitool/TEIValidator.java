@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.TreeMap;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.Validator;
@@ -45,6 +46,8 @@ public abstract class TEIValidator
 
   private final static org.slf4j.Logger log = LoggerFactory.getLogger(
     TEIValidator.class);
+  private static final ResourceBundle messages =
+    ResourceBundle.getBundle("de/huberlin/german/korpling/laudatioteitool/Messages");
   private Errors errors;
   
   protected final static CompactSyntaxSchemaFactory schemaFactory = new CompactSyntaxSchemaFactory();
@@ -63,7 +66,7 @@ public abstract class TEIValidator
   public boolean validate(final File file) throws IOException
   {
     Validator validator = getValidator();
-    Preconditions.checkNotNull(validator);
+    Preconditions.checkNotNull(validator, messages.getString("NO VALIDATOR"));
 
     validator.setErrorHandler(new ErrorHandler()
     {

@@ -17,7 +17,6 @@ package de.huberlin.german.korpling.laudatioteitool;
 
 import com.google.common.io.Files;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ResourceBundle;
 import org.apache.commons.cli.CommandLine;
@@ -47,6 +46,9 @@ public class App
       .addOption(new Option("merge", true, messages.getString("MERGE CONTENT FROM INPUT DIRECTORY INTO ONE TEI HEADER")))
       .addOption(new Option("split", true, messages.getString("SPLIT ONE TEI HEADER INTO SEVERAL HEADER FILES")))
       .addOption(new Option("validate", true, messages.getString("VALIDATE DIRECTORY OR FILE")))
+      .addOption(new Option("schemecorpus", true, messages.getString("CORPUS SCHEME LOCATION")))
+      .addOption(new Option("schemedoc", true, messages.getString("DOCUMENT SCHEME LOCATION")))
+      .addOption(new Option("schemeprep", true, messages.getString("PREPARATION SCHEME LOCATION")))
       .addOption(new Option("help", false, messages.getString("SHOW THIS HELP")));
     
     HelpFormatter fmt = new HelpFormatter();
@@ -65,7 +67,9 @@ public class App
       }
       else if(cmd.hasOption("validate"))
       {
-        validate(cmd.getOptionValue("validate"));
+        validate(cmd.getOptionValue("validate"), 
+          cmd.getOptionValue("schemecorpus"), cmd.getOptionValue("schemedoc"), 
+          cmd.getOptionValue("schemeprep"));
       }
       else if(cmd.hasOption("merge"))
       {
@@ -75,7 +79,9 @@ public class App
           System.exit(-1);
         }
         MergeTEI merge = new MergeTEI(new File(cmd.getOptionValue("merge")), 
-          new File(cmd.getArgs()[0]));
+          new File(cmd.getArgs()[0]), 
+          cmd.getOptionValue("schemecorpus"), cmd.getOptionValue(
+          "schemedoc"), cmd.getOptionValue("schemeprep"));
         merge.merge();
         
         System.exit(0);
@@ -88,7 +94,9 @@ public class App
           System.exit(-1);
         }
         SplitTEI split = new SplitTEI(new File(cmd.getOptionValue("split")), 
-          new File(cmd.getArgs()[0]));
+          new File(cmd.getArgs()[0]),
+          cmd.getOptionValue("schemecorpus"), cmd.getOptionValue(
+          "schemedoc"), cmd.getOptionValue("schemeprep"));
         split.split();
         System.exit(0);
       }
@@ -117,7 +125,8 @@ public class App
     
   }
   
-  private static void validate(String arg)
+  private static void validate(String arg, String corpusSchemeURL, 
+    String documentSchemeURL, String prepartionSchemeURL)
   {
     File f = new File(arg);
     if(!f.exists())
@@ -132,7 +141,8 @@ public class App
       {
         File out = File.createTempFile("tmpvalidation", ".xml");
         out.deleteOnExit();
-        MergeTEI merge = new MergeTEI(f, out);
+        MergeTEI merge = new MergeTEI(f, out, 
+          corpusSchemeURL, documentSchemeURL, prepartionSchemeURL);
         merge.merge();
         
         out.delete();
@@ -156,7 +166,8 @@ public class App
       {
         File out = Files.createTempDir();
         
-        SplitTEI split = new SplitTEI(f, out);
+        SplitTEI split = new SplitTEI(f, out,
+          corpusSchemeURL, documentSchemeURL, prepartionSchemeURL);
         split.split();
         
         deleteTemporaryDirectory(out);

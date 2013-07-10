@@ -46,11 +46,17 @@ public class MergeTEI
   private final static Logger log = LoggerFactory.getLogger(MergeTEI.class);
   private File inputDir;
   private File outputFile;
+  
+  private String corpusSchemeURL, documentSchemeURL, preparationSchemeURL;
 
-  public MergeTEI(File inputDir, File outputFile)
+  public MergeTEI(File inputDir, File outputFile, 
+    String corpusSchemeURL, String documentSchemeURL, String preparationSchemeURL)
   {
     this.inputDir = inputDir;
     this.outputFile = outputFile;
+    this.corpusSchemeURL = corpusSchemeURL;
+    this.documentSchemeURL = documentSchemeURL;
+    this.preparationSchemeURL = preparationSchemeURL;
   }
 
   public void merge() throws LaudatioException
@@ -118,7 +124,8 @@ public class MergeTEI
     Preconditions.checkArgument(corpusHeaderFiles.length > 0);
 
     File headerFile = corpusHeaderFiles[0];
-    TEIValidator validator = new TEICorpusValidator();
+    TEIValidator validator = 
+      corpusSchemeURL == null ? new TEICorpusValidator() : new FromURLValidator(corpusSchemeURL);
     if (validator.validate(headerFile))
     {
       SAXBuilder sax = new SAXBuilder();
@@ -156,7 +163,8 @@ public class MergeTEI
     });
     Preconditions.checkArgument(documentHeaderFiles.length > 0);
     SAXBuilder sax = new SAXBuilder();
-    TEIValidator validator = new TEIDocumentValidator();
+    TEIValidator validator =
+      documentSchemeURL == null ? new TEIDocumentValidator(): new FromURLValidator(documentSchemeURL);
     
     for (File f : documentHeaderFiles)
     {
@@ -199,8 +207,9 @@ public class MergeTEI
     });
     Preconditions.checkState(preparationHeaderFiles.length > 0);
     SAXBuilder sax = new SAXBuilder();
-    TEIValidator validator = new TEIPreparationValidator();
-
+    TEIValidator validator = 
+      preparationSchemeURL == null ? new TEIPreparationValidator(): new FromURLValidator(preparationSchemeURL);
+      
     for (File f : preparationHeaderFiles)
     {
       

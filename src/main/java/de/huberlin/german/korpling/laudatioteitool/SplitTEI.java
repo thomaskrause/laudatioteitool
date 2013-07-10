@@ -47,11 +47,16 @@ public class SplitTEI
   private final static Logger log = LoggerFactory.getLogger(SplitTEI.class);
   private File inputFile;
   private File outputDirectory;
-
-  public SplitTEI(File inputFile, File outputDirectory)
+  private String corpusSchemeURL, documentSchemeURL, preparationSchemeURL;
+  
+  public SplitTEI(File inputFile, File outputDirectory, 
+    String corpusSchemeURL, String documentSchemeURL, String preparationSchemeURL)
   {
     this.inputFile = inputFile;
     this.outputDirectory = outputDirectory;
+    this.corpusSchemeURL = corpusSchemeURL;
+    this.documentSchemeURL = documentSchemeURL;
+    this.preparationSchemeURL = preparationSchemeURL;
   }
 
   public void split() throws LaudatioException
@@ -104,7 +109,8 @@ public class SplitTEI
 
   private TEIValidator.Errors extractMainCorpusHeader(Document doc) throws LaudatioException, IOException, SAXException
   {
-    TEIValidator validator = new TEICorpusValidator();
+    TEIValidator validator = 
+      corpusSchemeURL == null ? new TEICorpusValidator() : new FromURLValidator(corpusSchemeURL);
     
     Element corpusHeader = doc.getRootElement().getChild("teiHeader", null);
     
@@ -163,7 +169,8 @@ public class SplitTEI
   
   private TEIValidator.Errors extractDocumentHeaders(Document doc) throws LaudatioException, IOException, SAXException
   {
-    TEIValidator validator = new TEIDocumentValidator();
+    TEIValidator validator = 
+      documentSchemeURL == null ? new TEIDocumentValidator(): new FromURLValidator(documentSchemeURL);
     
     File documentDir = new File(outputDirectory, "DocumentHeader");
     if (!documentDir.exists() && !documentDir.mkdir())
@@ -228,7 +235,8 @@ public class SplitTEI
   
   private TEIValidator.Errors extractPreparationSteps(Document doc) throws LaudatioException, IOException, SAXException
   {
-    TEIValidator validator = new TEIPreparationValidator();
+    TEIValidator validator = 
+      preparationSchemeURL == null ? new TEIPreparationValidator(): new FromURLValidator(preparationSchemeURL);
     Multiset<String> knownPreparationTitles = HashMultiset.create();
     
     File documentDir = new File(outputDirectory, "PreparationHeader");
