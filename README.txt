@@ -1,7 +1,7 @@
 LAUDATIO TEI Tool
 =================
 
-This tool is intended has a swiss army knife for validating 
+This tool is intended as a swiss army knife for validating 
 and manipulating TEI Header files that follow the subset as 
 defined by the LAUDATIO project (http://www.laudatio-repository.org).
 
