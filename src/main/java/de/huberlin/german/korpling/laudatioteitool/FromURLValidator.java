@@ -4,7 +4,7 @@
  */
 package de.huberlin.german.korpling.laudatioteitool;
 
-import static de.huberlin.german.korpling.laudatioteitool.TEIValidator.schemaFactory;
+import static de.huberlin.german.korpling.laudatioteitool.TEIValidator.compactSchemaFactory;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -30,7 +30,14 @@ public class FromURLValidator extends TEIValidator
   {
     try
     {
-      this.validator = schemaFactory.newSchema(new URL(url)).newValidator();
+      if(url.endsWith(".rng"))
+      {
+        this.validator = xmlSchemaFactory.newSchema(new URL(url)).newValidator();
+      }
+      else
+      {
+        this.validator = compactSchemaFactory.newSchema(new URL(url)).newValidator();
+      }
     }
     catch (MalformedURLException ex)
     {
