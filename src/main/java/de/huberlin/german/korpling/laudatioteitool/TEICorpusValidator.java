@@ -4,7 +4,7 @@
  */
 package de.huberlin.german.korpling.laudatioteitool;
 
-import static de.huberlin.german.korpling.laudatioteitool.TEIValidator.schemaFactory;
+import static de.huberlin.german.korpling.laudatioteitool.TEIValidator.compactSchemaFactory;
 import java.util.logging.Level;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Validator;
@@ -34,7 +34,7 @@ public class TEICorpusValidator extends TEIValidator
       "default_corpus.rnc"));
     try
     {
-      this.validator = schemaFactory.newSchema(source).newValidator();
+      this.validator = compactSchemaFactory.newSchema(source).newValidator();
     }
     catch (SAXException ex)
     {

@@ -22,7 +22,7 @@ Options:
  -validate <arg>       Validate the file or directory given as argument
 
 The scheme locations must be valid URIs and can bei either available via 
-internet  (e.g. http://example.com/scheme.xsd) or can be paths on your 
-local system (e.g. file:///C:/MyData/scheme.xsd).
+internet  (e.g. http://example.com/scheme.rng) or can be paths on your 
+local system (e.g. file:///C:/MyData/scheme.rng).
 Other arguments like the input or output files must be paths on you local 
 computer (e.g. C:\MyData\MyHeader\output.xml).

@@ -19,7 +19,10 @@ import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.io.Files;
+import com.thaiopensource.relaxng.SchemaFactory;
 import com.thaiopensource.relaxng.jaxp.CompactSyntaxSchemaFactory;
+import com.thaiopensource.relaxng.jaxp.XMLSyntaxSchemaFactory;
+import com.thaiopensource.validation.SchemaFactory2;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -50,8 +53,10 @@ public abstract class TEIValidator
     ResourceBundle.getBundle("de/huberlin/german/korpling/laudatioteitool/Messages");
   private Errors errors;
   
-  protected final static CompactSyntaxSchemaFactory schemaFactory = new CompactSyntaxSchemaFactory();
+  protected final static SchemaFactory2 compactSchemaFactory = new CompactSyntaxSchemaFactory();
+  protected final static SchemaFactory2 xmlSchemaFactory = new XMLSyntaxSchemaFactory();
 
+  
   protected TEIValidator()
   {
     this.errors = new Errors();
