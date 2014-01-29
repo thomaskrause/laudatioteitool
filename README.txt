@@ -15,6 +15,7 @@ Options:
  -help                 Show help the text
  -merge <arg>          merge content from input directory into one TEI
                        header
+ -config <arg>         Optional configuration file location
  -schemecorpus <arg>   Corpus header validation scheme location
  -schemedoc <arg>      Document header validation scheme location
  -schemeprep <arg>     Preparation header validation scheme location
@@ -26,3 +27,16 @@ internet  (e.g. http://example.com/scheme.rng) or can be paths on your
 local system (e.g. file:///C:/MyData/scheme.rng).
 Other arguments like the input or output files must be paths on you local 
 computer (e.g. C:\MyData\MyHeader\output.xml).
+
+Configuration file
+==================
+
+Instead of setting the "schemecorpus", "schemedoc" and "schemeprep" arguments
+on the command line, you can also put them in a configuration file and
+set the "-config" parameter.
+
+Example:
+
+schemacorpus=http://korpling.german.hu-berlin.de/schemata/laudatio/teiODD_LAUDATIODocument_Scheme7.rnc
+schemadocument=http://korpling.german.hu-berlin.de/schemata/laudatio/teiODD_LAUDATIODocument_Scheme7.rng
+
