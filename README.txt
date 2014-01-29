@@ -5,6 +5,8 @@ This tool is intended as a swiss army knife for validating
 and manipulating TEI Header files that follow the subset as 
 defined by the LAUDATIO project (http://www.laudatio-repository.org).
 
+Per default version 7 of the LAUDATIO TEI Header files are used.
+
 Usage
 -----
 

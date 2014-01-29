@@ -59,6 +59,8 @@ public class App
     
     HelpFormatter fmt = new HelpFormatter();
     String usage = "java -jar teitool.jar [options] [output directory/file]";
+    String header = messages.getString("HELP HEADER");
+    String footer = messages.getString("HELP FOOTER");
     
     try
     {
@@ -76,7 +78,7 @@ public class App
       
       if(cmd.hasOption("help"))
       {
-        fmt.printHelp(usage, opts);
+        fmt.printHelp(usage, header, opts, footer);
       }
       else if(cmd.hasOption("validate"))
       {
@@ -118,7 +120,7 @@ public class App
       }
       else
       {
-        fmt.printHelp(usage, opts);
+        fmt.printHelp(usage, header, opts, footer);
       }
       
       
@@ -126,7 +128,7 @@ public class App
     catch (ParseException ex)
     {
       System.err.println(ex.getMessage());
-      fmt.printHelp(usage, opts);
+      fmt.printHelp(usage, header, opts, footer);
     }
     catch (LaudatioException ex)
     {
