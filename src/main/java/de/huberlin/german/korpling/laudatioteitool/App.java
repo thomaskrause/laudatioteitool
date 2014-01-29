@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -148,6 +149,13 @@ public class App
     {
       inStream = new FileInputStream(location);
       props.load(inStream);
+      
+      // output the values
+      for(Map.Entry<Object, Object> e : props.entrySet())
+      {
+        log.info(messages.getString("SETTING OPTION FROM CONFIG"), e.getKey(), e.getValue());
+      }
+      
     }
     catch (FileNotFoundException ex)
     {
@@ -185,7 +193,7 @@ public class App
       {
         String value = cmd.getOptionValue(name);
         props.put(name, value);
-        log.debug("setting option {} to value {} as defined in the configuration file", name, value);
+        log.debug(messages.getString("SETTING OPTION FROM CMD"), name, value);
       }
     }
   }
