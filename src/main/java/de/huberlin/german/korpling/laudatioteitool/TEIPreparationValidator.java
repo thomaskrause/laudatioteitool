@@ -22,7 +22,7 @@ public class TEIPreparationValidator extends TEIValidator
     TEIPreparationValidator.class);
   
   public static final String DEFAULT_SCHEME_URL 
-    = "http://korpling.german.hu-berlin.de/schemata/laudatio/teiODD_LAUDATIOPreparation_S0.2.rnc";
+    = "http://korpling.german.hu-berlin.de/schemata/laudatio/teiODD_LAUDATIOPreparation_Scheme7.rng";
   
   private Validator validator = null;
 
@@ -31,10 +31,10 @@ public class TEIPreparationValidator extends TEIValidator
   {
     StreamSource source = new StreamSource(
       TEIPreparationValidator.class.getResourceAsStream(
-      "default_preparation.rnc"));
+      "default_preparation.rng"));
     try
     {
-      this.validator = compactSchemaFactory.newSchema(source).newValidator();
+      this.validator = xmlSchemaFactory.newSchema(source).newValidator();
     }
     catch (SAXException ex)
     {

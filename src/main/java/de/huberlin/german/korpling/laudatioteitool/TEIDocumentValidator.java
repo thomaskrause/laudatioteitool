@@ -4,7 +4,6 @@
  */
 package de.huberlin.german.korpling.laudatioteitool;
 
-import static de.huberlin.german.korpling.laudatioteitool.TEIValidator.compactSchemaFactory;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Validator;
 import org.slf4j.Logger;
@@ -22,7 +21,7 @@ public class TEIDocumentValidator extends TEIValidator
     TEIDocumentValidator.class);
   
   public static final String DEFAULT_SCHEME_URL 
-    = "http://korpling.german.hu-berlin.de/schemata/laudatio/teiODD_LAUDATIODocument_S0.2.rnc";
+    = "http://korpling.german.hu-berlin.de/schemata/laudatio/teiODD_LAUDATIODocument_Scheme7.rng";
   
   private Validator validator = null;
 
@@ -31,10 +30,10 @@ public class TEIDocumentValidator extends TEIValidator
     StreamSource source =
       new StreamSource(
       TEIDocumentValidator.class.getResourceAsStream(
-      "default_document.rnc"));
+      "default_document.rng"));
     try
     {
-      this.validator = compactSchemaFactory.newSchema(source).newValidator();
+      this.validator = xmlSchemaFactory.newSchema(source).newValidator();
     }
     catch (SAXException ex)
     {
