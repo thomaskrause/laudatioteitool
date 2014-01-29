@@ -17,8 +17,12 @@ package de.huberlin.german.korpling.laudatioteitool;
 
 import com.google.common.io.Files;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -46,6 +50,7 @@ public class App
       .addOption(new Option("merge", true, messages.getString("MERGE CONTENT FROM INPUT DIRECTORY INTO ONE TEI HEADER")))
       .addOption(new Option("split", true, messages.getString("SPLIT ONE TEI HEADER INTO SEVERAL HEADER FILES")))
       .addOption(new Option("validate", true, messages.getString("VALIDATE DIRECTORY OR FILE")))
+      .addOption(new Option("config", true, messages.getString("CONFIG FILE LOCATION")))
       .addOption(new Option("schemecorpus", true, messages.getString("CORPUS SCHEME LOCATION")))
       .addOption(new Option("schemedoc", true, messages.getString("DOCUMENT SCHEME LOCATION")))
       .addOption(new Option("schemeprep", true, messages.getString("PREPARATION SCHEME LOCATION")))
@@ -61,6 +66,13 @@ public class App
      
       CommandLine cmd = cliParser.parse(opts, args);
       
+      Properties props = new Properties();
+      if(cmd.hasOption("config"))
+      {
+        props = readConfig(cmd.getOptionValue("config"));
+      } // end if "config" given
+      fillPropertiesFromCommandLine(props, cmd);
+      
       if(cmd.hasOption("help"))
       {
         fmt.printHelp(usage, opts);
@@ -68,8 +80,9 @@ public class App
       else if(cmd.hasOption("validate"))
       {
         validate(cmd.getOptionValue("validate"), 
-          cmd.getOptionValue("schemecorpus"), cmd.getOptionValue("schemedoc"), 
-          cmd.getOptionValue("schemeprep"));
+          props.getProperty("schemecorpus"), 
+          props.getProperty("schemedoc"), 
+          props.getProperty("schemeprep"));
       }
       else if(cmd.hasOption("merge"))
       {
@@ -80,8 +93,9 @@ public class App
         }
         MergeTEI merge = new MergeTEI(new File(cmd.getOptionValue("merge")), 
           new File(cmd.getArgs()[0]), 
-          cmd.getOptionValue("schemecorpus"), cmd.getOptionValue(
-          "schemedoc"), cmd.getOptionValue("schemeprep"));
+          props.getProperty("schemecorpus"), 
+          props.getProperty("schemedoc"), 
+          props.getProperty("schemeprep"));
         merge.merge();
         
         System.exit(0);
@@ -95,8 +109,9 @@ public class App
         }
         SplitTEI split = new SplitTEI(new File(cmd.getOptionValue("split")), 
           new File(cmd.getArgs()[0]),
-          cmd.getOptionValue("schemecorpus"), cmd.getOptionValue(
-          "schemedoc"), cmd.getOptionValue("schemeprep"));
+          props.getProperty("schemecorpus"), 
+          props.getProperty("schemedoc"), 
+          props.getProperty("schemeprep"));
         split.split();
         System.exit(0);
       }
@@ -123,6 +138,56 @@ public class App
     
     System.exit(1);
     
+  }
+  
+  private static Properties readConfig(String location)
+  {
+    Properties props = new Properties();
+    FileInputStream inStream = null;
+    try
+    {
+      inStream = new FileInputStream(location);
+      props.load(inStream);
+    }
+    catch (FileNotFoundException ex)
+    {
+      log.warn(messages.getString("CONFIG FILE NOT FOUND"));
+    }
+    catch (IOException ex)
+    {
+      log.warn(messages.getString("CONFIG FILE NOT READABLE"));
+    }
+    finally
+    {
+      if (inStream != null)
+      {
+        try
+        {
+          inStream.close();
+        }
+        catch (IOException ex)
+        {
+          // ignore
+        }
+      }
+    }
+    return props;
+  }
+  
+  private static void fillPropertiesFromCommandLine(Properties props, 
+    CommandLine cmd)
+  {
+    for(Object o : cmd.getOptions())
+    {
+      Option opt = (Option) o;
+      String name = opt.getOpt();
+      if(cmd.hasOption(opt.getOpt()))
+      {
+        String value = cmd.getOptionValue(name);
+        props.put(name, value);
+        log.debug("setting option {} to value {} as defined in the configuration file", name, value);
+      }
+    }
   }
   
   private static void validate(String arg, String corpusSchemeURL, 
