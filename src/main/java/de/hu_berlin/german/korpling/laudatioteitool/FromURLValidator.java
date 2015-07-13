@@ -2,9 +2,9 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package de.huberlin.german.korpling.laudatioteitool;
+package de.hu_berlin.german.korpling.laudatioteitool;
 
-import static de.huberlin.german.korpling.laudatioteitool.TEIValidator.compactSchemaFactory;
+import static de.hu_berlin.german.korpling.laudatioteitool.TEIValidator.compactSchemaFactory;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ResourceBundle;

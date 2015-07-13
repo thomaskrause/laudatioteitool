@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.huberlin.german.korpling.laudatioteitool;
+package de.hu_berlin.german.korpling.laudatioteitool;
 
 import com.google.common.base.Preconditions;
 import java.io.File;

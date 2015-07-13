@@ -35,7 +35,7 @@
               </descriptorRefs>
               <archive>
                 <manifest>
-                  <mainClass>de.huberlin.german.korpling.laudatioteitool.App</mainClass>
+                  <mainClass>de.hu_berlin.german.korpling.laudatioteitool.App</mainClass>
                 </manifest>
               </archive>
             </configuration>
