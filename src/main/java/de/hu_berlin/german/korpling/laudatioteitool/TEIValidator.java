@@ -50,7 +50,7 @@ public abstract class TEIValidator
   private final static org.slf4j.Logger log = LoggerFactory.getLogger(
     TEIValidator.class);
   private static final ResourceBundle messages =
-    ResourceBundle.getBundle("de/huberlin/german/korpling/laudatioteitool/Messages");
+    ResourceBundle.getBundle("de/hu_berlin/german/korpling/laudatioteitool/Messages");
   private Errors errors;
   
   protected final static SchemaFactory2 compactSchemaFactory = new CompactSyntaxSchemaFactory();

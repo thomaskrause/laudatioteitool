@@ -22,7 +22,7 @@ public class FromURLValidator extends TEIValidator
   private final static Logger log = LoggerFactory.getLogger(
     FromURLValidator.class);
   private static final ResourceBundle messages =
-    ResourceBundle.getBundle("de/huberlin/german/korpling/laudatioteitool/Messages");
+    ResourceBundle.getBundle("de/hu_berlin/german/korpling/laudatioteitool/Messages");
   
   private Validator validator = null;
 

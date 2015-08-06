@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.logging.Level;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -43,7 +42,7 @@ public class App
   private static final Logger log = LoggerFactory.getLogger(App.class);
   
   private static final ResourceBundle messages =
-    ResourceBundle.getBundle("de/huberlin/german/korpling/laudatioteitool/Messages");
+    ResourceBundle.getBundle("de/hu_berlin/german/korpling/laudatioteitool/Messages");
 
   public static void main(String[] args)
   {
@@ -51,6 +50,7 @@ public class App
       .addOption(new Option("merge", true, messages.getString("MERGE CONTENT FROM INPUT DIRECTORY INTO ONE TEI HEADER")))
       .addOption(new Option("split", true, messages.getString("SPLIT ONE TEI HEADER INTO SEVERAL HEADER FILES")))
       .addOption(new Option("validate", true, messages.getString("VALIDATE DIRECTORY OR FILE")))
+      .addOption(new Option("normalizedate", false, messages.getString("NORMALIZE DATE")))
       .addOption(new Option("config", true, messages.getString("CONFIG FILE LOCATION")))
       .addOption(new Option("schemecorpus", true, messages.getString("CORPUS SCHEME LOCATION")))
       .addOption(new Option("schemedoc", true, messages.getString("DOCUMENT SCHEME LOCATION")))
@@ -99,7 +99,7 @@ public class App
           props.getProperty("schemecorpus"), 
           props.getProperty("schemedoc"), 
           props.getProperty("schemeprep"));
-        merge.merge();
+        merge.merge(props.getProperty("normalizedate") != null);
         
         System.exit(0);
       }
@@ -194,7 +194,7 @@ public class App
       if(cmd.hasOption(opt.getOpt()))
       {
         String value = cmd.getOptionValue(name);
-        props.put(name, value);
+        props.put(name, value == null ? "" : value);
         log.debug(messages.getString("SETTING OPTION FROM CMD"), name, value);
       }
     }
@@ -218,7 +218,7 @@ public class App
         out.deleteOnExit();
         MergeTEI merge = new MergeTEI(f, out, 
           corpusSchemeURL, documentSchemeURL, prepartionSchemeURL);
-        merge.merge();
+        merge.merge(false);
         
         out.delete();
         

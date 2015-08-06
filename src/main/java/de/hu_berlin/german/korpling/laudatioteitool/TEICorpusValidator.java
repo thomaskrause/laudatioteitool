@@ -4,8 +4,6 @@
  */
 package de.hu_berlin.german.korpling.laudatioteitool;
 
-import static de.hu_berlin.german.korpling.laudatioteitool.TEIValidator.compactSchemaFactory;
-import java.util.logging.Level;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Validator;
 import org.slf4j.Logger;

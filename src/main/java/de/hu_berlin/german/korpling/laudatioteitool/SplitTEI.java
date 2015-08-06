@@ -44,7 +44,7 @@ public class SplitTEI
 {
 
   private static final ResourceBundle messages =
-    ResourceBundle.getBundle("de/huberlin/german/korpling/laudatioteitool/Messages");
+    ResourceBundle.getBundle("de/hu_berlin/german/korpling/laudatioteitool/Messages");
   private final static Logger log = LoggerFactory.getLogger(SplitTEI.class);
   
   private File inputFile;

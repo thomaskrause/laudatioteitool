@@ -22,10 +22,12 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ResourceBundle;
+import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
+import org.jdom2.filter.Filters;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
@@ -42,12 +44,12 @@ public class MergeTEI
 
   private static final ResourceBundle messages =
     ResourceBundle.getBundle(
-    "de/huberlin/german/korpling/laudatioteitool/Messages");
+    "de/hu_berlin/german/korpling/laudatioteitool/Messages");
   private final static Logger log = LoggerFactory.getLogger(MergeTEI.class);
-  private File inputDir;
-  private File outputFile;
+  private final File inputDir;
+  private final File outputFile;
   
-  private String corpusSchemeURL, documentSchemeURL, preparationSchemeURL;
+  private final String corpusSchemeURL, documentSchemeURL, preparationSchemeURL;
 
   public MergeTEI(File inputDir, File outputFile, 
     String corpusSchemeURL, String documentSchemeURL, String preparationSchemeURL)
@@ -59,7 +61,7 @@ public class MergeTEI
     this.preparationSchemeURL = preparationSchemeURL;
   }
 
-  public void merge() throws LaudatioException
+  public void merge(boolean normalizeDate) throws LaudatioException
   {
     try
     {
@@ -87,6 +89,19 @@ public class MergeTEI
 
       Document mergedDoc = new Document(root);
 
+      if(normalizeDate)
+      {
+        // iterator over all "when" attributes and normalize them
+        for(Element e : mergedDoc.getContent(Filters.element()))
+        {
+          Attribute att = e.getAttribute("when");
+          if(att != null && att.getValue() != null)
+          {
+            att.setValue(ISODateConversion.toISO(att.getValue()));
+          }
+        }
+      }
+      
       // output the new XML
       XMLOutputter xmlOut = new XMLOutputter(Format.getPrettyFormat());
       xmlOut.output(mergedDoc, new OutputStreamWriter(new FileOutputStream(outputFile), "UTF-8"));
