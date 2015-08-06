@@ -92,7 +92,7 @@ public class MergeTEI
       if(normalizeDate)
       {
         // iterator over all "when" attributes and normalize them
-        for(Element e : mergedDoc.getContent(Filters.element()))
+        for(Element e : mergedDoc.getDescendants(Filters.element()))
         {
           Attribute att = e.getAttribute("when");
           if(att != null && att.getValue() != null)
